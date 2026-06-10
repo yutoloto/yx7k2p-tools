@@ -852,7 +852,7 @@ function calcSashimaPt(s){
       sashimaPt[order[2].idx]-=a*10;
       sashimaPt[order[3].idx]-=b*10;
     } else {
-      sashimaPt[order[0].idx]+=a*10;
+      sashimaPt[order[0].idx]+=(a+b)*10;
       sashimaPt[order[1].idx]-=a*10;
       sashimaPt[order[2].idx]-=b*10;
     }
