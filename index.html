@@ -844,7 +844,7 @@ function calcSashimaPt(s){
       if(v===null){ok=false;break;}
       vals.push(v); sum+=v;
     }
-    if(!ok||sum!==0) continue;
+    if(!ok||Math.abs(sum)>0.01) continue;
     const order=vals.map((p,idx)=>({p,idx})).sort((a,b)=>b.p-a.p);
     if(s.numP===4){
       sashimaPt[order[0].idx]+=b*10;
