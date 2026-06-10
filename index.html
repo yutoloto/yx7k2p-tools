@@ -465,7 +465,7 @@ function createSession(){
     venueAmt: 0,
     venuePcts: ['','','',''],
     inputMode: 'diff',
-    kaeshiPt: 35000,
+    kaeshiPt: 40000,
     sashimaOn: false,
     sashimaRate: '1-2',
     sotenRows: Array.from({length:INIT_ROWS}, ()=>Array(4).fill(''))
@@ -584,7 +584,7 @@ function loadSessionToUI(){
   document.getElementById('btn4').className = s.numP===4?'on':'';
   // 入力モード・差し馬
   if(!s.inputMode) s.inputMode='diff';
-  if(s.kaeshiPt==null) s.kaeshiPt=35000;
+  if(s.kaeshiPt==null) s.kaeshiPt=40000;
   if(s.sashimaOn==null) s.sashimaOn=false;
   if(!s.sashimaRate||typeof s.sashimaRate==='number') s.sashimaRate='1-2';
   ensureSotenRows(s);
@@ -833,7 +833,7 @@ function makeRow(i){
     inp.inputMode='numeric';
     const soten=s.inputMode==='soten';
     if(soten) ensureSotenRows(s);
-    inp.placeholder=soten?'25000':'—';
+    inp.placeholder=soten?'35000':'—';
     inp.value=soten?s.sotenRows[i][j]:s.rows[i][j];
     inp.oninput=e=>{
       if(s.inputMode==='soten'){
