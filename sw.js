@@ -1,5 +1,5 @@
 const CACHE = "nakayama-v7";
-const BASE = "/mahjong-score/";
+const BASE = "/yx7k2p-tools/";
 const URLS = [
   BASE,
   BASE + "index.html",
