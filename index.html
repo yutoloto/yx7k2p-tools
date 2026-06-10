@@ -296,6 +296,62 @@ button{cursor:pointer}
     <div class="chip-cols" id="chipCols"></div>
   </div>
 
+  <!-- 素点精算 -->
+  <div class="card">
+    <div class="section-title">🀄 素点精算</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px">最終素点を入力すると自動で精算します</div>
+
+    <!-- 返し点・ウマ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="rate-box">
+        <label>返し点</label>
+        <div class="rate-row">
+          <input type="number" inputmode="numeric" id="kaeshi" value="30000" oninput="calcSoten()">
+          <span>pt</span>
+        </div>
+      </div>
+      <div class="rate-box">
+        <label>ウマ（1着/2着）</label>
+        <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
+          <input type="number" inputmode="numeric" id="uma1" value="10" oninput="calcSoten()" style="width:48px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f1f5f9;padding:4px 6px;font-size:13px;text-align:center">
+          <span style="color:#64748b;font-size:12px">/</span>
+          <input type="number" inputmode="numeric" id="uma2" value="3" oninput="calcSoten()" style="width:48px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f1f5f9;padding:4px 6px;font-size:13px;text-align:center">
+          <span style="font-size:11px;color:#64748b">千点</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 差し馬 -->
+    <div class="rate-box" style="margin-bottom:10px">
+      <label>差し馬（勝者が総取り）</label>
+      <div class="rate-row">
+        <input type="number" inputmode="numeric" id="sashima" placeholder="0" oninput="calcSoten()">
+        <span>円</span>
+      </div>
+    </div>
+
+    <!-- ダブル飛び -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;background:#0f172a;border-radius:8px;padding:8px 12px">
+      <div>
+        <div style="font-size:13px;font-weight:700">ダブル飛び</div>
+        <div style="font-size:11px;color:#64748b">飛びボーナス2倍</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="doubleTobiChk" onchange="toggleDoubleTobi()" style="width:18px;height:18px">
+      </label>
+    </div>
+    <div id="tobiSetting" style="display:none;margin-bottom:10px">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px">上家取り（誰が飛ばされたか）</div>
+      <div id="tobiPickers" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+
+    <!-- 素点入力 -->
+    <div id="sotenInputs" style="margin-bottom:10px"></div>
+
+    <!-- 素点結果 -->
+    <div id="sotenResults"></div>
+  </div>
+
   <!-- 結果 -->
   <div class="card">
     <div class="section-title">精算結果</div>
@@ -551,6 +607,7 @@ function loadSessionToUI(){
   buildHead();
   buildGrid();
   buildChips();
+  buildSotenInputs();
   for(let i=0;i<s.rows.length;i++) updateRow(i);
   renderPresets();
   // 場代
@@ -569,7 +626,7 @@ function setPlayers(n){
   document.getElementById('btn3').className=n===3?'on':'';
   document.getElementById('btn4').className=n===4?'on':'';
   saveDB();
-  buildHead(); buildGrid(); buildChips(); update();
+  buildHead(); buildGrid(); buildChips(); buildSotenInputs(); update();
 }
 
 function buildHead(){
@@ -1196,6 +1253,145 @@ function renderVenue(){
 loadDB();
 loadSessionToUI();
 if('serviceWorker' in navigator){
+// --- 素点精算 ---
+function buildSotenInputs(){
+  const s=cur();
+  const el=document.getElementById('sotenInputs');
+  if(!el) return;
+  el.innerHTML='<div style="font-size:12px;color:#64748b;margin-bottom:6px">最終素点（各自の点棒）</div>';
+  for(let j=0;j<s.numP;j++){
+    const name=s.players[j]||`P${j+1}`;
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px';
+    div.innerHTML=`<div style="width:60px;font-size:13px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+      <input type="number" inputmode="numeric" id="soten${j}" placeholder="例: 32000"
+        style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;padding:7px 10px;font-size:14px"
+        oninput="calcSoten()">
+      <span style="font-size:12px;color:#64748b">pt</span>`;
+    el.appendChild(div);
+  }
+  buildTobiPickers();
+}
+
+function buildTobiPickers(){
+  const s=cur();
+  const el=document.getElementById('tobiPickers');
+  if(!el) return;
+  el.innerHTML='';
+  for(let j=0;j<s.numP;j++){
+    const name=s.players[j]||`P${j+1}`;
+    const btn=document.createElement('button');
+    btn.id=`tobiBtn${j}`;
+    btn.textContent=name;
+    btn.style.cssText='padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px';
+    btn.onclick=()=>selectTobi(j);
+    el.appendChild(btn);
+  }
+}
+
+let selectedTobi=-1;
+function selectTobi(j){
+  selectedTobi=j;
+  const s=cur();
+  for(let i=0;i<s.numP;i++){
+    const b=document.getElementById(`tobiBtn${i}`);
+    if(!b) continue;
+    b.style.background=i===j?'#dc2626':'#1e293b';
+    b.style.color=i===j?'#fff':'#94a3b8';
+    b.style.borderColor=i===j?'#dc2626':'#334155';
+  }
+  calcSoten();
+}
+
+function toggleDoubleTobi(){
+  const on=document.getElementById('doubleTobiChk').checked;
+  document.getElementById('tobiSetting').style.display=on?'':'none';
+  calcSoten();
+}
+
+function calcSoten(){
+  const s=cur();
+  const pr=num(document.getElementById('ptRate').value)??10;
+  const kaeshi=num(document.getElementById('kaeshi').value)??30000;
+  const uma1=(num(document.getElementById('uma1').value)??10)*1000;
+  const uma2=(num(document.getElementById('uma2').value)??3)*1000;
+  const sashima=num(document.getElementById('sashima').value)??0;
+  const doubleTobi=document.getElementById('doubleTobiChk')?.checked??false;
+
+  const scores=[];
+  for(let j=0;j<s.numP;j++){
+    const v=num(document.getElementById(`soten${j}`)?.value);
+    scores.push(v);
+  }
+  if(scores.some(v=>v===null)){
+    document.getElementById('sotenResults').innerHTML='<div style="font-size:12px;color:#475569;text-align:center;padding:8px">全員の素点を入力してください</div>';
+    return;
+  }
+
+  // 素点 → 点差
+  const pts=scores.map(s=>s-kaeshi);
+
+  // 順位確定
+  const order=[...pts.map((p,i)=>({p,i}))].sort((a,b)=>b.p-a.p);
+  const umaBonus=Array(s.numP).fill(0);
+  if(s.numP===4){
+    umaBonus[order[0].i]+=uma1;
+    umaBonus[order[1].i]+=uma2;
+    umaBonus[order[2].i]-=uma2;
+    umaBonus[order[3].i]-=uma1;
+  } else {
+    umaBonus[order[0].i]+=uma1;
+    umaBonus[order[1].i]+=0;
+    umaBonus[order[2].i]-=uma1;
+  }
+
+  // ダブル飛び上家取り
+  const tobiBonus=Array(s.numP).fill(0);
+  if(doubleTobi && selectedTobi>=0){
+    const tobiPt=scores[selectedTobi];
+    if(tobiPt<0){
+      // 上家 = 座席上の一つ前のプレイヤー
+      const kamichaIdx=(selectedTobi-1+s.numP)%s.numP;
+      const bonus=Math.abs(tobiPt)*pr;
+      tobiBonus[kamichaIdx]+=bonus;
+      tobiBonus[selectedTobi]-=bonus;
+    }
+  }
+
+  // 差し馬：1位が総取り
+  const sashimaBonus=Array(s.numP).fill(0);
+  if(sashima>0){
+    sashimaBonus[order[0].i]+=sashima*(s.numP-1);
+    for(let i=1;i<s.numP;i++) sashimaBonus[order[i].i]-=sashima;
+  }
+
+  const yens=pts.map((p,j)=>Math.round((p+umaBonus[j])*pr/100)*100+tobiBonus[j]+sashimaBonus[j]);
+  const maxAbs=Math.max(1,...yens.map(Math.abs));
+
+  const el=document.getElementById('sotenResults');
+  el.innerHTML='<div style="font-size:12px;color:#64748b;margin-bottom:8px;margin-top:4px">精算結果</div>'+
+    yens.map((yen,j)=>{
+      const name=s.players[j]||`P${j+1}`;
+      const isPos=yen>=0;
+      const bw=Math.round(Math.abs(yen)/maxAbs*50);
+      const rank=order.findIndex(o=>o.i===j)+1;
+      return `<div class="result-item">
+        <div class="result-top">
+          <span class="result-name">${rank}位 ${name}</span>
+          <span class="result-yen ${isPos?'pos':'neg'}">${isPos?'+':''}${yen.toLocaleString()}円</span>
+        </div>
+        <div class="result-sub">
+          <span>素点: <b>${scores[j].toLocaleString()}</b></span>
+          <span>点差: <b>${pts[j]>0?'+':''}${pts[j].toLocaleString()}</b></span>
+          <span>ウマ: <b>${umaBonus[j]>=0?'+':''}${umaBonus[j].toLocaleString()}</b></span>
+        </div>
+        <div class="result-bar">
+          <div class="result-bar-fill ${isPos?'pos':'neg'}" style="width:${bw}%"></div>
+          <div class="result-bar-mid"></div>
+        </div></div>`;
+    }).join('');
+}
+
   navigator.serviceWorker.register('sw.js', {updateViaCache:'all'}).then(reg => {
     if(!navigator.serviceWorker.controller) {
       navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
