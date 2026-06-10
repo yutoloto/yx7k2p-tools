@@ -292,12 +292,15 @@ button{cursor:pointer}
       <span style="font-size:12px;color:#94a3b8;font-weight:700">差し馬</span>
       <input type="checkbox" id="sashimaOnChk" onchange="onSashimaToggle()" style="width:18px;height:18px">
     </div>
-    <div id="sashimaRateBox" class="rate-box" style="margin-top:10px;display:none">
-      <label>差し馬レート</label>
-      <div class="rate-row">
-        <input type="number" inputmode="numeric" id="sashimaRateInput" value="10" oninput="onSashimaRateChange()">
-        <span>千点</span>
+    <div id="sashimaRateBox" style="margin-top:10px;display:none">
+      <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:6px">差し馬レート</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button id="sr12" class="on" onclick="setSashimaRate('1-2')" style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px">1-2</button>
+        <button id="sr13" onclick="setSashimaRate('1-3')" style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px">1-3</button>
+        <button id="sr24" onclick="setSashimaRate('2-4')" style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px">2-4</button>
+        <button id="sr23" onclick="setSashimaRate('2-3')" style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px">2-3</button>
       </div>
+      <div style="font-size:11px;color:#475569;margin-top:6px" id="sashimaRateDesc"></div>
     </div>
 
   </div>
@@ -321,62 +324,6 @@ button{cursor:pointer}
       <span id="chipStatus"></span>
     </div>
     <div class="chip-cols" id="chipCols"></div>
-  </div>
-
-  <!-- 素点精算 -->
-  <div class="card">
-    <div class="section-title">🀄 素点精算</div>
-    <div style="font-size:11px;color:#64748b;margin-bottom:10px">最終素点を入力すると自動で精算します</div>
-
-    <!-- 返し点・ウマ -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div class="rate-box">
-        <label>返し点</label>
-        <div class="rate-row">
-          <input type="number" inputmode="numeric" id="kaeshi" value="30000" oninput="calcSoten()">
-          <span>pt</span>
-        </div>
-      </div>
-      <div class="rate-box">
-        <label>ウマ（1着/2着）</label>
-        <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
-          <input type="number" inputmode="numeric" id="uma1" value="10" oninput="calcSoten()" style="width:48px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f1f5f9;padding:4px 6px;font-size:13px;text-align:center">
-          <span style="color:#64748b;font-size:12px">/</span>
-          <input type="number" inputmode="numeric" id="uma2" value="3" oninput="calcSoten()" style="width:48px;background:#0f172a;border:1px solid #334155;border-radius:6px;color:#f1f5f9;padding:4px 6px;font-size:13px;text-align:center">
-          <span style="font-size:11px;color:#64748b">千点</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 差し馬 -->
-    <div class="rate-box" style="margin-bottom:10px">
-      <label>差し馬（勝者が総取り）</label>
-      <div class="rate-row">
-        <input type="number" inputmode="numeric" id="sashima" placeholder="0" oninput="calcSoten()">
-        <span>円</span>
-      </div>
-    </div>
-
-    <!-- ダブル飛び -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;background:#0f172a;border-radius:8px;padding:8px 12px">
-      <div>
-        <div style="font-size:13px;font-weight:700">ダブル飛び</div>
-        <div style="font-size:11px;color:#64748b">飛びボーナス2倍</div>
-      </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="doubleTobiChk" onchange="toggleDoubleTobi()" style="width:18px;height:18px">
-      </label>
-    </div>
-    <div id="tobiSetting" style="display:none;margin-bottom:10px">
-      <div style="font-size:12px;color:#64748b;margin-bottom:6px">上家取り（誰が飛ばされたか）</div>
-      <div id="tobiPickers" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-    </div>
-
-    <!-- 素点入力 -->
-    <div id="sotenInputs" style="margin-bottom:10px"></div>
-
-    <!-- 素点結果 -->
-    <div id="sotenResults"></div>
   </div>
 
   <!-- 結果 -->
@@ -518,9 +465,9 @@ function createSession(){
     venueAmt: 0,
     venuePcts: ['','','',''],
     inputMode: 'diff',
-    kaeshiPt: 25000,
+    kaeshiPt: 35000,
     sashimaOn: false,
-    sashimaRate: 10,
+    sashimaRate: '1-2',
     sotenRows: Array.from({length:INIT_ROWS}, ()=>Array(4).fill(''))
   };
 }
@@ -637,9 +584,9 @@ function loadSessionToUI(){
   document.getElementById('btn4').className = s.numP===4?'on':'';
   // 入力モード・差し馬
   if(!s.inputMode) s.inputMode='diff';
-  if(s.kaeshiPt==null) s.kaeshiPt=25000;
+  if(s.kaeshiPt==null) s.kaeshiPt=35000;
   if(s.sashimaOn==null) s.sashimaOn=false;
-  if(s.sashimaRate==null) s.sashimaRate=10;
+  if(!s.sashimaRate||typeof s.sashimaRate==='number') s.sashimaRate='1-2';
   ensureSotenRows(s);
   document.getElementById('modeDiff').className = s.inputMode==='diff'?'on':'';
   document.getElementById('modeSoten').className = s.inputMode==='soten'?'on':'';
@@ -647,7 +594,7 @@ function loadSessionToUI(){
   document.getElementById('kaeshiPt').value = s.kaeshiPt;
   document.getElementById('sashimaOnChk').checked = s.sashimaOn;
   document.getElementById('sashimaRateBox').style.display = s.sashimaOn?'':'none';
-  document.getElementById('sashimaRateInput').value = s.sashimaRate;
+  updateSashimaRateUI(s.sashimaRate);
   // グリッド・チップ
   buildHead();
   buildGrid();
@@ -794,6 +741,7 @@ function onSashimaToggle(){
   const s=cur();
   s.sashimaOn=document.getElementById('sashimaOnChk').checked;
   document.getElementById('sashimaRateBox').style.display=s.sashimaOn?'':'none';
+  updateSashimaRateUI(s.sashimaRate||'1-2');
   saveDB(); update();
 }
 
@@ -815,10 +763,35 @@ function convertSotenRow(i){
   for(let j=0;j<s.numP;j++) s.rows[i][j]= all ? String((vals[j]-kaeshi)/1000) : '';
 }
 
+function parseSashimaRate(r){
+  const m=String(r||'1-2').match(/^(\d+)-(\d+)$/);
+  return m?[parseInt(m[1]),parseInt(m[2])]:[1,2];
+}
+
+function setSashimaRate(r){
+  cur().sashimaRate=r; saveDB();
+  updateSashimaRateUI(r);
+}
+
+function updateSashimaRateUI(r){
+  ['12','13','24','23'].forEach(k=>{
+    const b=document.getElementById('sr'+k);
+    if(!b) return;
+    const label=k[0]+'-'+k.slice(1);
+    const on=r===label;
+    b.style.background=on?'#3b82f6':'#1e293b';
+    b.style.color=on?'#fff':'#94a3b8';
+    b.style.borderColor=on?'#3b82f6':'#334155';
+  });
+  const [a,b]=parseSashimaRate(r);
+  const desc=document.getElementById('sashimaRateDesc');
+  if(desc) desc.textContent=`3人: 1位+${(a+b)*10}千 / 2位-${a*10}千 / 3位-${b*10}千　4人: 1位+${b*10}千 / 2位+${a*10}千 / 3位-${a*10}千 / 4位-${b*10}千`;
+}
+
 function calcSashimaPt(s){
   const sashimaPt=Array(s.numP).fill(0);
   if(!s.sashimaOn) return sashimaPt;
-  const rate=s.sashimaRate??10;
+  const [a,b]=parseSashimaRate(s.sashimaRate);
   for(let i=0;i<s.rows.length;i++){
     const vals=[]; let ok=true, sum=0;
     for(let j=0;j<s.numP;j++){
@@ -829,14 +802,14 @@ function calcSashimaPt(s){
     if(!ok||sum!==0) continue;
     const order=vals.map((p,idx)=>({p,idx})).sort((a,b)=>b.p-a.p);
     if(s.numP===4){
-      sashimaPt[order[0].idx]+=rate;
-      sashimaPt[order[1].idx]+=rate;
-      sashimaPt[order[2].idx]-=rate;
-      sashimaPt[order[3].idx]-=rate;
+      sashimaPt[order[0].idx]+=b*10;
+      sashimaPt[order[1].idx]+=a*10;
+      sashimaPt[order[2].idx]-=a*10;
+      sashimaPt[order[3].idx]-=b*10;
     } else {
-      sashimaPt[order[0].idx]+=3*rate;
-      sashimaPt[order[1].idx]-=rate;
-      sashimaPt[order[2].idx]-=2*rate;
+      sashimaPt[order[0].idx]+=(a+b)*10;
+      sashimaPt[order[1].idx]-=a*10;
+      sashimaPt[order[2].idx]-=b*10;
     }
   }
   return sashimaPt;
