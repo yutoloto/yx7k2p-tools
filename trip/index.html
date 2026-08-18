@@ -37,6 +37,7 @@ body{
 }
 input,select,textarea,button{font-family:inherit;font-size:16px;color:var(--ink)}
 input[type=number]{-moz-appearance:textfield}
+input[type=checkbox]{accent-color:var(--accent)}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 button{cursor:pointer;background:none;border:none}
 svg{display:block}
@@ -108,12 +109,12 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .daytabs::-webkit-scrollbar{display:none}
 .daytabs button{flex-shrink:0;border-radius:200px;padding:8px 16px;font-size:14px;font-weight:500;background:var(--ash);color:var(--steel)}
 .daytabs button.on{background:var(--ink);color:var(--on-ink)}
-.rail{position:relative;padding-left:64px}
-.rail::before{content:"";position:absolute;left:calc(64px - 25px);top:8px;bottom:8px;width:1px;background:var(--rule)}
+.rail{position:relative;padding-left:76px}
+.rail::before{content:"";position:absolute;left:60px;top:8px;bottom:8px;width:1px;background:var(--rule)}
 .ev{position:relative;padding:14px 0;border-bottom:1px solid var(--rule);width:100%;text-align:left;display:block}
 .ev:last-of-type{border-bottom:none}
-.ev .et{position:absolute;left:-64px;top:16px;width:44px;text-align:right;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.ev .dot{position:absolute;left:-26px;top:20px;width:7px;height:7px;border-radius:50%;background:var(--rule);border:1px solid var(--canvas)}
+.ev .et{position:absolute;left:-76px;top:16px;width:48px;text-align:right;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ev .dot{position:absolute;left:-19px;top:20px;width:7px;height:7px;border-radius:50%;background:var(--rule);border:1px solid var(--canvas)}
 .ev .ttl{font-size:16px;font-weight:500;line-height:1.4}
 .ev .note{font-size:14px;line-height:1.6;color:var(--steel);margin-top:4px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ev .meta{font-size:12px;color:var(--mute);margin-top:6px}
@@ -121,9 +122,9 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .ev.past .note{color:var(--mute)}
 .ev.key .dot{background:var(--accent);border-color:var(--accent)}
 .ev.key .et{color:var(--accent)}
-.ev.cur .dot{background:var(--accent);width:11px;height:11px;left:-28px;top:18px;border-color:var(--accent)}
+.ev.cur .dot{background:var(--accent);width:11px;height:11px;left:-21px;top:18px;border-color:var(--accent)}
 .nowline{position:relative;height:1px;background:var(--accent);margin:2px 0}
-.nowline span{position:absolute;left:-64px;top:-8px;font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--accent);background:var(--canvas);padding-right:6px}
+.nowline span{position:absolute;left:-76px;top:-8px;font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--accent);background:var(--canvas);padding-right:6px}
 
 /* ── 持ちもの ── */
 .prog{height:2px;background:var(--rule);margin:10px 0 0;overflow:hidden}
