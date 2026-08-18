@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>旅のしおり</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{max-width:100%;overflow-x:hidden}
+body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding-bottom:76px;font-size:15px}
+input,select,textarea{font-family:inherit;font-size:16px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{height:4px;width:4px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+button{cursor:pointer;font-family:inherit}
+
+.page{display:none;padding:12px;max-width:560px;margin:0 auto}
+.page.active{display:block}
+
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+#bottom-nav button{flex:1;padding:10px 0 14px;border:none;background:transparent;color:#475569;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
+#bottom-nav button .icon{font-size:20px;line-height:1}
+#bottom-nav button.active{color:#3b82f6}
+
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.hd>div:first-child{min-width:0;flex:1}
+.hd-right{flex-shrink:0}
+.hd h1{font-size:19px;font-weight:900;color:#fff}
+.hd p{font-size:11px;color:#64748b;margin-top:2px}
+.hd-right{margin-left:auto;display:flex;gap:6px}
+
+.card{background:#1e293b;border-radius:16px;padding:14px;margin-bottom:11px}
+.section-title{font-size:12px;font-weight:700;color:#94a3b8;margin:16px 0 8px;letter-spacing:.04em}
+.btn{border:none;border-radius:10px;padding:11px 14px;font-size:14px;font-weight:700;background:#3b82f6;color:#fff}
+.btn.sub{background:#334155;color:#cbd5e1}
+.btn.dngr{background:#7f1d1d;color:#fecaca}
+.btn.sm{padding:7px 11px;font-size:12px;border-radius:8px}
+.btn.wide{width:100%}
+.row{display:flex;gap:8px;align-items:center;min-width:0}
+.row>*{min-width:0}
+.row.wrap{flex-wrap:wrap}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:9px;padding:10px 11px;width:100%}
+textarea{min-height:72px;resize:vertical;line-height:1.6}
+label.lb{font-size:11px;color:#94a3b8;display:block;margin-bottom:4px}
+.muted{color:#64748b;font-size:12px}
+.empty{text-align:center;color:#475569;padding:32px 12px;font-size:13px;line-height:1.9}
+
+/* 旅リスト */
+.trip-item{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.trip-item .ti{flex:1;min-width:0}
+.trip-item .btn{flex-shrink:0}
+.trip-item .tt{font-size:16px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trip-item .td{font-size:11.5px;color:#64748b;margin-top:3px}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:#1d4ed8;color:#dbeafe}
+
+/* 行程 */
+.daytabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.daytabs button{flex-shrink:0;background:#1e293b;border:1px solid #334155;color:#94a3b8;border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700}
+.daytabs button.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.ev{background:#1e293b;border-radius:13px;margin-bottom:9px;overflow:hidden}
+.ev-h{display:flex;gap:11px;padding:13px;align-items:flex-start}
+.ev-t{font-size:15px;font-weight:800;color:#60a5fa;font-variant-numeric:tabular-nums;min-width:52px;padding-top:1px}
+.ev-b{flex:1;min-width:0}
+.ev-ttl{font-size:15px;font-weight:600;line-height:1.45}
+.ev-note{font-size:12.5px;color:#94a3b8;margin-top:5px;line-height:1.65;white-space:pre-wrap}
+.ev.key{border:1.5px solid #f59e0b}
+.ev.key .ev-t{color:#fbbf24}
+.ev-acts{display:flex;gap:6px;padding:0 13px 11px}
+.chip{display:inline-block;font-size:10px;font-weight:700;background:#78350f;color:#fde68a;border-radius:5px;padding:2px 7px;margin-left:7px;vertical-align:2px}
+a.link{color:#60a5fa;text-decoration:none;font-size:12.5px;font-weight:700}
+
+/* チェック */
+.ck-item{display:flex;gap:11px;align-items:flex-start;background:#1e293b;border-radius:12px;padding:13px;margin-bottom:8px}
+.ck-box{width:26px;height:26px;border-radius:7px;border:2.5px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;transition:.15s}
+.ck-item.done .ck-box{background:#16a34a;border-color:#16a34a;color:#fff}
+.ck-item.done .ck-tx{color:#475569;text-decoration:line-through}
+.ck-tx{flex:1;font-size:14.5px;line-height:1.5}
+.prog-bar{height:8px;background:#0f172a;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.prog-bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .4s}
+
+/* お金 */
+.pill-people{display:flex;flex-wrap:wrap;gap:6px}
+.pp{background:#0f172a;border:1px solid #334155;border-radius:99px;padding:6px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.pp b{color:#fff;font-weight:700}
+.pp .x{color:#64748b;font-size:15px;line-height:1}
+.exp{background:#1e293b;border-radius:13px;padding:13px;margin-bottom:9px}
+.exp-top{display:flex;align-items:baseline;gap:10px}
+.exp-n{font-size:15px;font-weight:700;flex:1;min-width:0}
+.exp-a{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.exp-m{font-size:11.5px;color:#64748b;margin-top:5px;line-height:1.6}
+.settle{background:#0f172a;border:1px solid #1e40af;border-radius:12px;padding:13px;margin-bottom:9px}
+.settle .who{font-size:14px;font-weight:700}
+.settle .amt{font-size:22px;font-weight:900;color:#60a5fa;font-variant-numeric:tabular-nums;margin-top:3px}
+.tot{background:#1d4ed8;border-radius:14px;padding:15px;margin-bottom:11px}
+.tot .l{font-size:11px;color:#bfdbfe;font-weight:700;letter-spacing:.08em}
+.tot .v{font-size:29px;font-weight:900;font-variant-numeric:tabular-nums;margin-top:2px}
+.split-grid{display:grid;grid-template-columns:1fr auto;gap:7px 10px;align-items:center;margin-top:9px}
+.split-grid .nm{font-size:13.5px}
+.out{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;font-size:14px;line-height:1.85;white-space:pre-wrap;font-variant-numeric:tabular-nums}
+
+/* モーダル */
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.86);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.modal-in{background:#1e293b;border-radius:20px 20px 0 0;padding:18px 15px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:560px;max-height:92vh;overflow-y:auto}
+.modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
+.fld{margin-bottom:12px}
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:300;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ══ 旅一覧 ══ -->
+<div class="page active" id="p-trips">
+  <div class="hd">
+    <div><h1>旅のしおり</h1><p id="trips-sub">保存した旅</p></div>
+    <div class="hd-right"><button class="btn sm" onclick="newTrip()">＋ 新しい旅</button></div>
+  </div>
+  <div id="trip-list"></div>
+  <div class="section-title">データ</div>
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <button class="btn sub sm" style="flex:1" onclick="exportAll()">書き出し</button>
+      <button class="btn sub sm" style="flex:1" onclick="importAll()">読み込み</button>
+    </div>
+    <p class="muted" style="margin-top:9px;line-height:1.7">この端末に保存されます。機種変のときは書き出してからコピーしてください。</p>
+  </div>
+</div>
+
+<!-- ══ 行程 ══ -->
+<div class="page" id="p-plan">
+  <div class="hd">
+    <div><h1 id="plan-title">行程</h1><p id="plan-sub"></p></div>
+    <div class="hd-right"><button class="btn sm" onclick="editEvent(null)">＋</button></div>
+  </div>
+  <div class="daytabs" id="daytabs"></div>
+  <div id="ev-list"></div>
+</div>
+
+<!-- ══ 持ちもの ══ -->
+<div class="page" id="p-check">
+  <div class="hd">
+    <div><h1>持ちもの</h1><p id="check-sub"></p></div>
+    <div class="hd-right"><button class="btn sm" onclick="addCheck()">＋</button></div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="muted" id="ck-count">0 / 0</span></div>
+    <div class="prog-bar"><i id="ck-prog" style="width:0%"></i></div>
+  </div>
+  <div id="ck-list"></div>
+</div>
+
+<!-- ══ お金 ══ -->
+<div class="page" id="p-money">
+  <div class="hd">
+    <div><h1>お金</h1><p id="money-sub"></p></div>
+    <div class="hd-right"><button class="btn sm" onclick="editExpense(null)">＋</button></div>
+  </div>
+
+  <div class="tot"><div class="l">合計</div><div class="v" id="m-total">¥0</div></div>
+
+  <div class="section-title">メンバー</div>
+  <div class="card">
+    <div class="pill-people" id="people-list"></div>
+    <div class="row" style="margin-top:10px">
+      <input type="text" id="new-person" placeholder="名前を追加" onkeydown="if(event.key==='Enter')addPerson()">
+      <button class="btn sm" onclick="addPerson()">追加</button>
+    </div>
+  </div>
+
+  <div class="section-title">精算</div>
+  <div id="settle-list"></div>
+
+  <div class="section-title">支払い一覧</div>
+  <div id="exp-list"></div>
+
+  <div class="section-title">請求文</div>
+  <div class="card">
+    <div class="fld">
+      <label class="lb">誰への請求か</label>
+      <select id="bill-target" onchange="renderBill()"></select>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <label class="lb" style="margin:0;flex:1">端数を切り捨てる</label>
+      <select id="bill-round" style="width:auto" onchange="renderBill()">
+        <option value="1">しない</option>
+        <option value="100">100円</option>
+        <option value="1000" selected>1000円</option>
+      </select>
+    </div>
+    <div class="out" id="bill-out">—</div>
+    <button class="btn wide" style="margin-top:10px" onclick="copyBill()">コピー</button>
+  </div>
+</div>
+
+<!-- ══ メモ ══ -->
+<div class="page" id="p-memo">
+  <div class="hd"><div><h1>メモ</h1><p id="memo-sub">連絡先・思い出</p></div></div>
+  <div class="card">
+    <label class="lb">自由に書けます（自動保存）</label>
+    <textarea id="memo-body" style="min-height:340px" oninput="saveMemo()"></textarea>
+  </div>
+</div>
+
+<nav id="bottom-nav">
+  <button class="active" onclick="showPage('trips',this)"><span class="icon">🧳</span>旅</button>
+  <button onclick="showPage('plan',this)"><span class="icon">🕐</span>行程</button>
+  <button onclick="showPage('check',this)"><span class="icon">✓</span>持ちもの</button>
+  <button onclick="showPage('money',this)"><span class="icon">💴</span>お金</button>
+  <button onclick="showPage('memo',this)"><span class="icon">📝</span>メモ</button>
+</nav>
+
+<div class="modal" id="modal"><div class="modal-in" id="modal-in"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const KEY='trip_db_v1';
+let DB={trips:[],cur:null};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}
+  if(!DB.trips)DB.trips=[];}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('保存できません');}}
+function trip(){return DB.trips.find(t=>t.id===DB.cur)||null;}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1700);}
+
+function showPage(p,btn){
+  if(p!=='trips'&&!trip()){toast('先に旅を選んでください');return;}
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  $('p-'+p).classList.add('active');
+  document.querySelectorAll('#bottom-nav button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('#bottom-nav button')[['trips','plan','check','money','memo'].indexOf(p)].classList.add('active');
+  render();window.scrollTo(0,0);
+}
+function closeModal(){$('modal').classList.remove('on');}
+function openModal(html){$('modal-in').innerHTML=html;$('modal').classList.add('on');}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+
+/* ═══ 旅 ═══ */
+function newTrip(){
+  openModal(`<h3>新しい旅</h3>
+  <div class="fld"><label class="lb">タイトル</label><input type="text" id="f-name" placeholder="熊野旅行"></div>
+  <div class="fld"><label class="lb">開始日</label><input type="date" id="f-start"></div>
+  <div class="fld"><label class="lb">日数</label><input type="number" id="f-days" value="2" min="1" max="30"></div>
+  <div class="fld"><label class="lb">メンバー（カンマ区切り）</label><input type="text" id="f-people" placeholder="自分, 相方"></div>
+  <div class="row"><button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
+  <button class="btn" style="flex:1" onclick="createTrip()">作る</button></div>`);
+}
+function createTrip(){
+  const name=$('f-name').value.trim()||'新しい旅';
+  const start=$('f-start').value||new Date().toISOString().slice(0,10);
+  const days=Math.max(1,parseInt($('f-days').value)||1);
+  const ppl=$('f-people').value.split(',').map(s=>s.trim()).filter(Boolean);
+  DB.trips.unshift({id:uid(),name,start,days,people:ppl.length?ppl:['自分'],events:[],checks:[],expenses:[],memo:''});
+  DB.cur=DB.trips[0].id;save();closeModal();showPage('plan');
+}
+function openTrip(id){DB.cur=id;save();showPage('plan');}
+function delTrip(id,e){
+  e.stopPropagation();
+  const t=DB.trips.find(x=>x.id===id);if(!t)return;
+  if(!confirm('「'+t.name+'」を削除します。よろしいですか？'))return;
+  DB.trips=DB.trips.filter(x=>x.id!==id);if(DB.cur===id)DB.cur=null;save();render();
+}
+function renderTrips(){
+  const el=$('trip-list');
+  $('trips-sub').textContent=DB.trips.length?DB.trips.length+'件':'まだありません';
+  if(!DB.trips.length){el.innerHTML='<div class="empty">右上の「＋ 新しい旅」から<br>最初の旅を作ってください</div>';return;}
+  el.innerHTML=DB.trips.map(t=>{
+    const done=t.checks.filter(c=>c.done).length;
+    return `<div class="trip-item" onclick="openTrip('${t.id}')">
+      <div class="ti"><div class="tt">${esc(t.name)}</div>
+      <div class="td">${esc(t.start)}から${t.days}日 ／ ${t.people.length}人 ／ 持ちもの${done}/${t.checks.length}</div></div>
+      ${t.id===DB.cur?'<span class="badge">選択中</span>':''}
+      <button class="btn dngr sm" onclick="delTrip('${t.id}',event)">削除</button></div>`;
+  }).join('');
+}
+
+/* ═══ 行程 ═══ */
+let curDay=1;
+function editEvent(id){
+  const t=trip();if(!t)return;
+  const e=id?t.events.find(x=>x.id===id):null;
+  const opts=Array.from({length:t.days},(_,i)=>`<option value="${i+1}" ${e&&e.day===i+1?'selected':(!e&&curDay===i+1?'selected':'')}>${i+1}日目</option>`).join('');
+  openModal(`<h3>${e?'予定を編集':'予定を追加'}</h3>
+  <div class="fld"><label class="lb">日</label><select id="f-day">${opts}</select></div>
+  <div class="fld"><label class="lb">時刻</label><input type="time" id="f-time" value="${e?esc(e.time):''}"></div>
+  <div class="fld"><label class="lb">内容</label><input type="text" id="f-ttl" value="${e?esc(e.title):''}" placeholder="尾鷲で買い出し"></div>
+  <div class="fld"><label class="lb">メモ</label><textarea id="f-note" placeholder="場所・電話・注意点">${e?esc(e.note):''}</textarea></div>
+  <div class="fld"><label class="lb">リンク（地図・URL）</label><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://..."></div>
+  <div class="fld"><label class="lb"><input type="checkbox" id="f-key" ${e&&e.key?'checked':''} style="width:auto;margin-right:7px">ここだけは守る（強調表示）</label></div>
+  <div class="row">${e?`<button class="btn dngr" onclick="delEvent('${e.id}')">削除</button>`:''}
+  <button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
+  <button class="btn" style="flex:1" onclick="saveEvent('${e?e.id:''}')">保存</button></div>`);
+}
+function saveEvent(id){
+  const t=trip();
+  const o={day:parseInt($('f-day').value)||1,time:$('f-time').value,title:$('f-ttl').value.trim()||'（無題）',
+           note:$('f-note').value.trim(),url:$('f-url').value.trim(),key:$('f-key').checked};
+  if(id){Object.assign(t.events.find(x=>x.id===id),o);}
+  else{o.id=uid();t.events.push(o);}
+  curDay=o.day;save();closeModal();render();
+}
+function delEvent(id){const t=trip();t.events=t.events.filter(x=>x.id!==id);save();closeModal();render();}
+function renderPlan(){
+  const t=trip();if(!t)return;
+  $('plan-title').textContent=t.name;
+  $('plan-sub').textContent=t.start+'から'+t.days+'日';
+  $('daytabs').innerHTML=Array.from({length:t.days},(_,i)=>
+    `<button class="${curDay===i+1?'on':''}" onclick="curDay=${i+1};render()">${i+1}日目</button>`).join('');
+  const evs=t.events.filter(e=>e.day===curDay).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
+  $('ev-list').innerHTML=evs.length?evs.map(e=>`
+    <div class="ev ${e.key?'key':''}">
+      <div class="ev-h" onclick="editEvent('${e.id}')">
+        <div class="ev-t">${esc(e.time||'—')}</div>
+        <div class="ev-b"><div class="ev-ttl">${esc(e.title)}${e.key?'<span class="chip">厳守</span>':''}</div>
+        ${e.note?`<div class="ev-note">${esc(e.note)}</div>`:''}</div>
+      </div>
+      ${e.url?`<div class="ev-acts"><a class="link" href="${esc(e.url)}" target="_blank" rel="noopener">開く →</a></div>`:''}
+    </div>`).join('')
+    :'<div class="empty">この日の予定はまだありません<br>右上の＋から追加できます</div>';
+}
+
+/* ═══ 持ちもの ═══ */
+function addCheck(){
+  openModal(`<h3>持ちものを追加</h3>
+  <div class="fld"><label class="lb">品名（改行で複数まとめて追加）</label><textarea id="f-ck" placeholder="マリンシューズ&#10;現金3万円"></textarea></div>
+  <div class="row"><button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
+  <button class="btn" style="flex:1" onclick="saveCheck()">追加</button></div>`);
+}
+function saveCheck(){
+  const t=trip();
+  $('f-ck').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    .forEach(x=>t.checks.push({id:uid(),text:x,done:false}));
+  save();closeModal();render();
+}
+function toggleCheck(id){const t=trip();const c=t.checks.find(x=>x.id===id);c.done=!c.done;save();render();}
+function delCheck(id,e){e.stopPropagation();const t=trip();t.checks=t.checks.filter(x=>x.id!==id);save();render();}
+function renderCheck(){
+  const t=trip();if(!t)return;
+  const d=t.checks.filter(c=>c.done).length,n=t.checks.length;
+  $('check-sub').textContent=t.name;
+  $('ck-count').textContent=d+' / '+n;
+  $('ck-prog').style.width=(n?d/n*100:0)+'%';
+  $('ck-list').innerHTML=n?t.checks.map(c=>`
+    <div class="ck-item ${c.done?'done':''}" onclick="toggleCheck('${c.id}')">
+      <div class="ck-box">✓</div><div class="ck-tx">${esc(c.text)}</div>
+      <button class="btn dngr sm" onclick="delCheck('${c.id}',event)">×</button>
+    </div>`).join('')
+    :'<div class="empty">＋から持ちものを追加できます<br>改行でまとめて入れられます</div>';
+}
+
+/* ═══ お金 ═══ */
+function addPerson(){
+  const t=trip();const v=$('new-person').value.trim();
+  if(!v)return;
+  if(t.people.includes(v)){toast('もういます');return;}
+  t.people.push(v);$('new-person').value='';save();render();
+}
+function delPerson(nm){
+  const t=trip();
+  if(t.expenses.some(e=>e.payer===nm||e.split.includes(nm))){toast('支払いで使われています');return;}
+  t.people=t.people.filter(p=>p!==nm);save();render();
+}
+function editExpense(id){
+  const t=trip();if(!t)return;
+  const e=id?t.expenses.find(x=>x.id===id):null;
+  const payerOpts=t.people.map(p=>`<option ${e&&e.payer===p?'selected':''}>${esc(p)}</option>`).join('');
+  const splitBoxes=t.people.map(p=>{
+    const on=e?e.split.includes(p):true;
+    return `<label class="pp"><input type="checkbox" class="sp" value="${esc(p)}" ${on?'checked':''} style="width:auto;margin:0">${esc(p)}</label>`;
+  }).join('');
+  openModal(`<h3>${e?'支払いを編集':'支払いを追加'}</h3>
+  <div class="fld"><label class="lb">項目</label><input type="text" id="f-en" value="${e?esc(e.name):''}" placeholder="宿"></div>
+  <div class="fld"><label class="lb">金額</label><input type="number" id="f-ea" value="${e?e.amount:''}" placeholder="33000" inputmode="numeric"></div>
+  <div class="fld"><label class="lb">払った人</label><select id="f-ep">${payerOpts}</select></div>
+  <div class="fld"><label class="lb">誰で割るか（外すとその人は負担しません）</label>
+    <div class="pill-people" style="margin-top:5px">${splitBoxes}</div></div>
+  <div class="row">${e?`<button class="btn dngr" onclick="delExpense('${e.id}')">削除</button>`:''}
+  <button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
+  <button class="btn" style="flex:1" onclick="saveExpense('${e?e.id:''}')">保存</button></div>`);
+}
+function saveExpense(id){
+  const t=trip();
+  const split=Array.from(document.querySelectorAll('.sp')).filter(c=>c.checked).map(c=>c.value);
+  if(!split.length){toast('割る人を選んでください');return;}
+  const o={name:$('f-en').value.trim()||'（項目なし）',amount:Math.round(parseFloat($('f-ea').value)||0),
+           payer:$('f-ep').value,split};
+  if(id){Object.assign(t.expenses.find(x=>x.id===id),o);}else{o.id=uid();t.expenses.push(o);}
+  save();closeModal();render();
+}
+function delExpense(id){const t=trip();t.expenses=t.expenses.filter(x=>x.id!==id);save();closeModal();render();}
+
+function calcBalance(){
+  const t=trip();const bal={};
+  t.people.forEach(p=>bal[p]=0);
+  t.expenses.forEach(e=>{
+    if(bal[e.payer]===undefined)bal[e.payer]=0;
+    bal[e.payer]+=e.amount;
+    const each=e.amount/e.split.length;
+    e.split.forEach(p=>{if(bal[p]===undefined)bal[p]=0;bal[p]-=each;});
+  });
+  return bal;
+}
+function settlements(){
+  const bal=calcBalance();
+  const cred=[],debt=[];
+  Object.entries(bal).forEach(([p,v])=>{
+    if(v>0.5)cred.push({p,v});else if(v<-0.5)debt.push({p,v:-v});
+  });
+  cred.sort((a,b)=>b.v-a.v);debt.sort((a,b)=>b.v-a.v);
+  const out=[];let i=0,j=0;
+  while(i<debt.length&&j<cred.length){
+    const amt=Math.min(debt[i].v,cred[j].v);
+    out.push({from:debt[i].p,to:cred[j].p,amt});
+    debt[i].v-=amt;cred[j].v-=amt;
+    if(debt[i].v<0.5)i++;if(cred[j].v<0.5)j++;
+  }
+  return out;
+}
+function renderMoney(){
+  const t=trip();if(!t)return;
+  $('money-sub').textContent=t.name;
+  const total=t.expenses.reduce((s,e)=>s+e.amount,0);
+  $('m-total').textContent=yen(total);
+  $('people-list').innerHTML=t.people.map(p=>
+    `<span class="pp"><b>${esc(p)}</b><span class="x" onclick="delPerson('${esc(p)}')">×</span></span>`).join('')
+    ||'<span class="muted">メンバーがいません</span>';
+  const st=settlements();
+  $('settle-list').innerHTML=st.length?st.map(s=>
+    `<div class="settle"><div class="who">${esc(s.from)} → ${esc(s.to)}</div><div class="amt">${yen(s.amt)}</div></div>`).join('')
+    :'<div class="card"><span class="muted">精算はありません</span></div>';
+  $('exp-list').innerHTML=t.expenses.length?t.expenses.map(e=>`
+    <div class="exp" onclick="editExpense('${e.id}')">
+      <div class="exp-top"><div class="exp-n">${esc(e.name)}</div><div class="exp-a">${yen(e.amount)}</div></div>
+      <div class="exp-m">${esc(e.payer)}が支払い ／ ${e.split.length}人で割る（1人 ${yen(e.amount/e.split.length)}）</div>
+    </div>`).join('')
+    :'<div class="empty">＋から支払いを追加できます</div>';
+  const sel=$('bill-target');const prev=sel.value;
+  sel.innerHTML=t.people.map(p=>`<option ${p===prev?'selected':''}>${esc(p)}</option>`).join('');
+  renderBill();
+}
+function renderBill(){
+  const t=trip();if(!t)return;
+  const target=$('bill-target').value;
+  const round=parseInt($('bill-round').value)||1;
+  const lines=[];let sum=0;
+  t.expenses.forEach(e=>{
+    if(!e.split.includes(target))return;
+    const share=e.amount/e.split.length;
+    sum+=share;
+    lines.push(esc(e.name)+'　'+yen(share).replace('¥','')+'円');
+  });
+  if(!lines.length){$('bill-out').textContent='—';return;}
+  let txt=lines.join('\n')+'\n\n合計　'+Math.round(sum).toLocaleString('ja-JP')+'円';
+  if(round>1){
+    const r=Math.floor(sum/round)*round;
+    if(r!==Math.round(sum))txt+='\n→ '+r.toLocaleString('ja-JP')+'円';
+  }
+  $('bill-out').textContent=txt;
+}
+function copyBill(){
+  const txt=$('bill-out').textContent;
+  if(!txt||txt==='—'){toast('内容がありません');return;}
+  navigator.clipboard.writeText(txt).then(()=>toast('コピーしました'),()=>{
+    const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);
+    ta.select();document.execCommand('copy');ta.remove();toast('コピーしました');});
+}
+
+/* ═══ メモ ═══ */
+function saveMemo(){const t=trip();if(!t)return;t.memo=$('memo-body').value;save();}
+function renderMemo(){const t=trip();if(!t)return;$('memo-sub').textContent=t.name;$('memo-body').value=t.memo||'';}
+
+/* ═══ 書き出し / 読み込み ═══ */
+function exportAll(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='tabi-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();toast('書き出しました');
+}
+function importAll(){
+  const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+  i.onchange=()=>{const f=i.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{try{const d=JSON.parse(r.result);
+      if(!d.trips)throw 0;
+      if(!confirm('いまのデータを置き換えます。よろしいですか？'))return;
+      DB=d;save();render();toast('読み込みました');
+    }catch(e){toast('読み込めませんでした');}};
+    r.readAsText(f);};
+  i.click();
+}
+
+function render(){
+  renderTrips();
+  if(trip()){renderPlan();renderCheck();renderMoney();renderMemo();}
+}
+load();
+if(DB.cur&&trip()){}
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
