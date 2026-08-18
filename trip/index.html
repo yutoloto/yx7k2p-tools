@@ -503,12 +503,47 @@ function importAll(){
   i.click();
 }
 
+
+/* ═══ リンクからの取り込み ═══ */
+function b64ToUtf8(x){
+  const bin=atob(x.replace(/-/g,'+').replace(/_/g,'/'));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+function importFromLink(){
+  const h=location.hash||'';
+  if(h.indexOf('#import=')!==0)return false;
+  let data;
+  try{ data=JSON.parse(b64ToUtf8(decodeURIComponent(h.slice(8)))); }
+  catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  const list=Array.isArray(data)?data:(data.trips||[data]);
+  if(!list.length){ history.replaceState(null,'',location.pathname); return false; }
+  const names=list.map(t=>t.name||'名前なし').join('、');
+  if(!confirm('「'+names+'」を追加します。よろしいですか？')){
+    history.replaceState(null,'',location.pathname); return false;
+  }
+  list.forEach(t=>{
+    t.id=uid();
+    t.events=t.events||[]; t.checks=t.checks||[]; t.expenses=t.expenses||[];
+    t.people=t.people||['自分']; t.memo=t.memo||'';
+    t.events.forEach(e=>{if(!e.id)e.id=uid();});
+    t.checks.forEach(c=>{if(!c.id)c.id=uid();});
+    t.expenses.forEach(x=>{if(!x.id)x.id=uid();});
+    DB.trips.unshift(t);
+  });
+  DB.cur=DB.trips[0].id;
+  save();
+  history.replaceState(null,'',location.pathname);
+  toast('追加しました');
+  return true;
+}
+
 function render(){
   renderTrips();
   if(trip()){renderPlan();renderCheck();renderMoney();renderMemo();}
 }
 load();
-if(DB.cur&&trip()){}
+importFromLink();
 render();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
