@@ -510,12 +510,20 @@ function b64ToUtf8(x){
   const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
-function importFromLink(){
+async function importFromLinkZ(){
   const h=location.hash||'';
-  if(h.indexOf('#import=')!==0)return false;
-  let data;
-  try{ data=JSON.parse(b64ToUtf8(decodeURIComponent(h.slice(8)))); }
-  catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  if(h.indexOf('#z=')!==0)return false;
+  let json;
+  try{
+    const bin=atob(decodeURIComponent(h.slice(3)).replace(/-/g,'+').replace(/_/g,'/'));
+    const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+    const ds=new DecompressionStream('deflate-raw');
+    const buf=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+    json=new TextDecoder().decode(buf);
+  }catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  return applyImport(JSON.parse(json));
+}
+function applyImport(data){
   const list=Array.isArray(data)?data:(data.trips||[data]);
   if(!list.length){ history.replaceState(null,'',location.pathname); return false; }
   const names=list.map(t=>t.name||'名前なし').join('、');
@@ -537,13 +545,21 @@ function importFromLink(){
   toast('追加しました');
   return true;
 }
+function importFromLink(){
+  const h=location.hash||'';
+  if(h.indexOf('#import=')!==0)return false;
+  let data;
+  try{ data=JSON.parse(b64ToUtf8(decodeURIComponent(h.slice(8)))); }
+  catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  return applyImport(data);
+}
 
 function render(){
   renderTrips();
   if(trip()){renderPlan();renderCheck();renderMoney();renderMemo();}
 }
 load();
-importFromLink();
+if(!importFromLink()){ importFromLinkZ().then(ok=>{ if(ok) render(); }); }
 render();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
