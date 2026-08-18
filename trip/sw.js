@@ -1,6 +1,6 @@
-const CACHE = "tabi-v1";
+const CACHE = "tabi-v2";
 const BASE = "/yx7k2p-tools/trip/";
-const URLS = [BASE, BASE + "index.html", BASE + "manifest.json"];
+const URLS = [BASE, BASE + "index.html", BASE + "manifest.json", BASE + "icon-192.png", BASE + "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)).then(() => self.skipWaiting()));
