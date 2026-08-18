@@ -14,10 +14,13 @@ self.addEventListener("install", e => {
   );
 });
 
+/* 同じオリジンに旅アプリ(tabi-)が同居している。消すのは自分の古いキャッシュだけ */
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(
+        ks.filter(k => k.startsWith("nakayama-") && k !== CACHE).map(k => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });

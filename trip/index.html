@@ -2,408 +2,482 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>旅のしおり</title>
 <link rel="manifest" href="manifest.json">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="旅のしおり">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{max-width:100%;overflow-x:hidden}
-body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding-bottom:76px;font-size:15px}
-input,select,textarea{font-family:inherit;font-size:16px}
-input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+:root{
+  --canvas:#ffffff; --ash:#efefef; --ash2:#e6e6e6;
+  --ink:#202020; --steel:#4d4d4d; --mute:#8a8a8a;
+  --rule:#dcdcdc; --accent:#ff682c; --brass:#816729;
+  --on-ink:#ffffff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --canvas:#0d0d0d; --ash:#191919; --ash2:#232323;
+    --ink:#f0f0f0; --steel:#a8a8a8; --mute:#767676;
+    --rule:#2b2b2b; --accent:#ff7d47; --brass:#c9a24d;
+    --on-ink:#0d0d0d;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--canvas);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;
+  font-size:16px;line-height:1.5;font-weight:400;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+}
+input,select,textarea,button{font-family:inherit;font-size:16px;color:var(--ink)}
 input[type=number]{-moz-appearance:textfield}
-::-webkit-scrollbar{height:4px;width:4px}
-::-webkit-scrollbar-track{background:#1e293b}
-::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
-button{cursor:pointer;font-family:inherit}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+button{cursor:pointer;background:none;border:none}
+svg{display:block}
 
-.page{display:none;padding:12px;max-width:560px;margin:0 auto}
+/* ── タイポ階層 ── */
+.display{font-size:44px;line-height:.95;letter-spacing:-.02em;font-weight:400;font-variant-numeric:tabular-nums}
+.h-lg{font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:500}
+.h{font-size:20px;line-height:1.2;letter-spacing:-.02em;font-weight:600}
+.cap{font-size:14px;line-height:1.43;font-weight:500;color:var(--steel)}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.accent{color:var(--accent)}
+
+/* ── 骨格 ── */
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+.page{display:none}
 .page.active{display:block}
+header{position:sticky;top:0;z-index:50;background:var(--canvas);border-bottom:1px solid var(--rule)}
+.hbar{max-width:560px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.hbar .nm{flex:1;min-width:0;text-align:left}
+.hbar .nm b{display:block;font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .nm span{display:block;font-size:12px;color:var(--mute);margin-top:1px}
+.hbar .nm b::after{content:"▾";color:var(--mute);font-size:12px;margin-left:6px;vertical-align:1px}
+.sect{margin-top:36px}
+.sect:first-child{margin-top:20px}
+.sect>.lbl{margin-bottom:12px}
+.rule{height:1px;background:var(--rule);margin:20px 0}
 
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-#bottom-nav button{flex:1;padding:10px 0 14px;border:none;background:transparent;color:#475569;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
-#bottom-nav button .icon{font-size:20px;line-height:1}
-#bottom-nav button.active{color:#3b82f6}
+/* ── 面 ── */
+.card{background:var(--ash);border-radius:8px;padding:16px}
+.hero{background:var(--ash);border-radius:6px 0 0 0;padding:20px}
+.tile{background:var(--ash);border-radius:8px;padding:14px 16px}
+.list-row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:16px 0;border-bottom:1px solid var(--rule)}
 
-.hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.hd>div:first-child{min-width:0;flex:1}
-.hd-right{flex-shrink:0}
-.hd h1{font-size:19px;font-weight:900;color:#fff}
-.hd p{font-size:11px;color:#64748b;margin-top:2px}
-.hd-right{margin-left:auto;display:flex;gap:6px}
-
-.card{background:#1e293b;border-radius:16px;padding:14px;margin-bottom:11px}
-.section-title{font-size:12px;font-weight:700;color:#94a3b8;margin:16px 0 8px;letter-spacing:.04em}
-.btn{border:none;border-radius:10px;padding:11px 14px;font-size:14px;font-weight:700;background:#3b82f6;color:#fff}
-.btn.sub{background:#334155;color:#cbd5e1}
-.btn.dngr{background:#7f1d1d;color:#fecaca}
-.btn.sm{padding:7px 11px;font-size:12px;border-radius:8px}
+/* ── ボタン（accentは使わない） ── */
+.btn{background:var(--ink);color:var(--on-ink);border-radius:0;padding:14px 18px;font-size:16px;font-weight:500;letter-spacing:-.01em;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.out{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.btn.ghost{background:transparent;color:var(--steel);border:1px solid var(--rule)}
+.btn.sm{padding:9px 14px;font-size:14px}
 .btn.wide{width:100%}
-.row{display:flex;gap:8px;align-items:center;min-width:0}
-.row>*{min-width:0}
-.row.wrap{flex-wrap:wrap}
+.btn.danger{background:transparent;color:#b3261e;border:1px solid #b3261e}
+@media (prefers-color-scheme:dark){.btn.danger{color:#ff8a80;border-color:#ff8a80}}
+
+/* ── 入力 ── */
+.fld{margin-bottom:16px}
+.fld>.lbl{display:block;margin-bottom:6px}
 input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
-  background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:9px;padding:10px 11px;width:100%}
-textarea{min-height:72px;resize:vertical;line-height:1.6}
-label.lb{font-size:11px;color:#94a3b8;display:block;margin-bottom:4px}
-.muted{color:#64748b;font-size:12px}
-.empty{text-align:center;color:#475569;padding:32px 12px;font-size:13px;line-height:1.9}
+  width:100%;background:var(--canvas);border:1px solid var(--rule);border-radius:0;
+  padding:12px;line-height:1.4}
+textarea{min-height:88px;resize:vertical;line-height:1.7}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 16px) 18px,calc(100% - 11px) 18px;background-size:5px 5px;background-repeat:no-repeat}
 
-/* 旅リスト */
-.trip-item{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.trip-item .ti{flex:1;min-width:0}
-.trip-item .btn{flex-shrink:0}
-.trip-item .tt{font-size:16px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.trip-item .td{font-size:11.5px;color:#64748b;margin-top:3px}
-.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:#1d4ed8;color:#dbeafe}
+/* ── いま ── */
+.now-time{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.now-time .t{font-size:56px;line-height:.9;font-weight:400;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.now-time .d{font-size:13px;color:var(--steel);font-weight:500}
+.stat{display:flex;gap:8px;margin-top:12px}
+.stat>button{flex:1;background:var(--ash);border-radius:8px;padding:12px 14px;text-align:left}
+.stat .v{font-size:22px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums;display:block;margin-top:2px}
+.next-in{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.keyline{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.keyline:last-child{border-bottom:none}
+.keyline .kt{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--brass);min-width:44px}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent);border:1px solid var(--accent);padding:1px 6px;border-radius:2px;vertical-align:2px;margin-left:8px}
+.tag.brass{color:var(--brass);border-color:var(--brass)}
 
-/* 行程 */
-.daytabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
-.daytabs button{flex-shrink:0;background:#1e293b;border:1px solid #334155;color:#94a3b8;border-radius:99px;padding:8px 14px;font-size:12.5px;font-weight:700}
-.daytabs button.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
-.ev{background:#1e293b;border-radius:13px;margin-bottom:9px;overflow:hidden}
-.ev-h{display:flex;gap:11px;padding:13px;align-items:flex-start}
-.ev-t{font-size:15px;font-weight:800;color:#60a5fa;font-variant-numeric:tabular-nums;min-width:52px;padding-top:1px}
-.ev-b{flex:1;min-width:0}
-.ev-ttl{font-size:15px;font-weight:600;line-height:1.45}
-.ev-note{font-size:12.5px;color:#94a3b8;margin-top:5px;line-height:1.65;white-space:pre-wrap}
-.ev.key{border:1.5px solid #f59e0b}
-.ev.key .ev-t{color:#fbbf24}
-.ev-acts{display:flex;gap:6px;padding:0 13px 11px}
-.chip{display:inline-block;font-size:10px;font-weight:700;background:#78350f;color:#fde68a;border-radius:5px;padding:2px 7px;margin-left:7px;vertical-align:2px}
-a.link{color:#60a5fa;text-decoration:none;font-size:12.5px;font-weight:700}
+/* ── 行程（レール） ── */
+.daytabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.daytabs::-webkit-scrollbar{display:none}
+.daytabs button{flex-shrink:0;border-radius:200px;padding:8px 16px;font-size:14px;font-weight:500;background:var(--ash);color:var(--steel)}
+.daytabs button.on{background:var(--ink);color:var(--on-ink)}
+.rail{position:relative;padding-left:64px}
+.rail::before{content:"";position:absolute;left:calc(64px - 25px);top:8px;bottom:8px;width:1px;background:var(--rule)}
+.ev{position:relative;padding:14px 0;border-bottom:1px solid var(--rule);width:100%;text-align:left;display:block}
+.ev:last-of-type{border-bottom:none}
+.ev .et{position:absolute;left:-64px;top:16px;width:44px;text-align:right;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ev .dot{position:absolute;left:-26px;top:20px;width:7px;height:7px;border-radius:50%;background:var(--rule);border:1px solid var(--canvas)}
+.ev .ttl{font-size:16px;font-weight:500;line-height:1.4}
+.ev .note{font-size:14px;line-height:1.6;color:var(--steel);margin-top:4px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev .meta{font-size:12px;color:var(--mute);margin-top:6px}
+.ev.past .et,.ev.past .ttl{color:var(--mute)}
+.ev.past .note{color:var(--mute)}
+.ev.key .dot{background:var(--accent);border-color:var(--accent)}
+.ev.key .et{color:var(--accent)}
+.ev.cur .dot{background:var(--accent);width:11px;height:11px;left:-28px;top:18px;border-color:var(--accent)}
+.nowline{position:relative;height:1px;background:var(--accent);margin:2px 0}
+.nowline span{position:absolute;left:-64px;top:-8px;font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--accent);background:var(--canvas);padding-right:6px}
 
-/* チェック */
-.ck-item{display:flex;gap:11px;align-items:flex-start;background:#1e293b;border-radius:12px;padding:13px;margin-bottom:8px}
-.ck-box{width:26px;height:26px;border-radius:7px;border:2.5px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;transition:.15s}
-.ck-item.done .ck-box{background:#16a34a;border-color:#16a34a;color:#fff}
-.ck-item.done .ck-tx{color:#475569;text-decoration:line-through}
-.ck-tx{flex:1;font-size:14.5px;line-height:1.5}
-.prog-bar{height:8px;background:#0f172a;border-radius:99px;overflow:hidden;margin:8px 0 4px}
-.prog-bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .4s}
+/* ── 持ちもの ── */
+.prog{height:2px;background:var(--rule);margin:10px 0 0;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);transition:width .35s}
+.ck{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;padding:15px 0;border-bottom:1px solid var(--rule)}
+.ck .box{width:22px;height:22px;border:1px solid var(--ink);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.ck .box svg{opacity:0}
+.ck.done .box{background:var(--ink)}
+.ck.done .box svg{opacity:1;stroke:var(--on-ink)}
+.ck .tx{flex:1;font-size:16px;line-height:1.45}
+.ck.done .tx{color:var(--mute);text-decoration:line-through;text-decoration-thickness:1px}
 
-/* お金 */
-.pill-people{display:flex;flex-wrap:wrap;gap:6px}
-.pp{background:#0f172a;border:1px solid #334155;border-radius:99px;padding:6px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px}
-.pp b{color:#fff;font-weight:700}
-.pp .x{color:#64748b;font-size:15px;line-height:1}
-.exp{background:#1e293b;border-radius:13px;padding:13px;margin-bottom:9px}
-.exp-top{display:flex;align-items:baseline;gap:10px}
-.exp-n{font-size:15px;font-weight:700;flex:1;min-width:0}
-.exp-a{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-.exp-m{font-size:11.5px;color:#64748b;margin-top:5px;line-height:1.6}
-.settle{background:#0f172a;border:1px solid #1e40af;border-radius:12px;padding:13px;margin-bottom:9px}
-.settle .who{font-size:14px;font-weight:700}
-.settle .amt{font-size:22px;font-weight:900;color:#60a5fa;font-variant-numeric:tabular-nums;margin-top:3px}
-.tot{background:#1d4ed8;border-radius:14px;padding:15px;margin-bottom:11px}
-.tot .l{font-size:11px;color:#bfdbfe;font-weight:700;letter-spacing:.08em}
-.tot .v{font-size:29px;font-weight:900;font-variant-numeric:tabular-nums;margin-top:2px}
-.split-grid{display:grid;grid-template-columns:1fr auto;gap:7px 10px;align-items:center;margin-top:9px}
-.split-grid .nm{font-size:13.5px}
-.out{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;font-size:14px;line-height:1.85;white-space:pre-wrap;font-variant-numeric:tabular-nums}
+/* ── お金 ── */
+.settle{padding:16px 0;border-bottom:1px solid var(--rule)}
+.settle:last-child{border-bottom:none}
+.settle .who{font-size:14px;color:var(--steel);font-weight:500}
+.settle .amt{font-size:34px;font-weight:400;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:2px}
+.exp{display:flex;gap:12px;align-items:baseline;width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--rule)}
+.exp .n{flex:1;min-width:0;font-size:16px;font-weight:500}
+.exp .s{display:block;font-size:12px;color:var(--mute);margin-top:3px;font-weight:400}
+.exp .a{font-size:17px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.pp{display:inline-flex;align-items:center;gap:8px;background:var(--ash);border-radius:200px;padding:7px 8px 7px 14px;font-size:14px;font-weight:500}
+.pp .x{color:var(--mute);font-size:16px;line-height:1;padding:0 4px}
+.billout{background:var(--ash);border-radius:8px;padding:16px;font-size:15px;line-height:1.9;white-space:pre-wrap;font-variant-numeric:tabular-nums}
+details{border-top:1px solid var(--rule);padding:14px 0}
+summary{list-style:none;cursor:pointer;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"＋";color:var(--mute);font-size:15px}
+details[open] summary::after{content:"−"}
+details>div{padding-top:16px}
 
-/* モーダル */
-.modal{position:fixed;inset:0;background:rgba(2,6,23,.86);z-index:200;display:none;align-items:flex-end;justify-content:center}
-.modal.on{display:flex}
-.modal-in{background:#1e293b;border-radius:20px 20px 0 0;padding:18px 15px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:560px;max-height:92vh;overflow-y:auto}
-.modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
-.fld{margin-bottom:12px}
-.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:300;opacity:0;transition:.25s;pointer-events:none}
+/* ── ナビ ── */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--canvas);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom)}
+.navin{max-width:560px;margin:0 auto;display:flex;padding:8px 10px 10px}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--mute);font-size:10px;font-weight:600;letter-spacing:.02em;padding:6px 0;border-radius:200px;position:relative}
+nav button.on{color:var(--ink);background:var(--ash)}
+nav button .bdg{position:absolute;top:2px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:200px;background:var(--accent);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── シート ── */
+.sheet{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet-in{background:var(--canvas);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;border-radius:8px 8px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+.sheet-in h3{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px}
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
+.empty{padding:40px 0;text-align:center;color:var(--mute);font-size:14px;line-height:1.9}
+.toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:11px 20px;border-radius:200px;font-size:14px;font-weight:500;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
 
-<!-- ══ 旅一覧 ══ -->
-<div class="page active" id="p-trips">
-  <div class="hd">
-    <div><h1>旅のしおり</h1><p id="trips-sub">保存した旅</p></div>
-    <div class="hd-right"><button class="btn sm" onclick="newTrip()">＋ 新しい旅</button></div>
-  </div>
-  <div id="trip-list"></div>
-  <div class="section-title">データ</div>
-  <div class="card">
-    <div class="row" style="gap:8px">
-      <button class="btn sub sm" style="flex:1" onclick="exportAll()">書き出し</button>
-      <button class="btn sub sm" style="flex:1" onclick="importAll()">読み込み</button>
-    </div>
-    <p class="muted" style="margin-top:9px;line-height:1.7">この端末に保存されます。機種変のときは書き出してからコピーしてください。</p>
-  </div>
-</div>
+<header><div class="hbar">
+  <button class="nm" onclick="openTrips()"><b id="hd-name">旅のしおり</b><span id="hd-sub">旅を作ってください</span></button>
+  <button class="btn out sm" onclick="openTrips()">切替</button>
+</div></header>
 
-<!-- ══ 行程 ══ -->
-<div class="page" id="p-plan">
-  <div class="hd">
-    <div><h1 id="plan-title">行程</h1><p id="plan-sub"></p></div>
-    <div class="hd-right"><button class="btn sm" onclick="editEvent(null)">＋</button></div>
-  </div>
-  <div class="daytabs" id="daytabs"></div>
-  <div id="ev-list"></div>
-</div>
+<div class="page active" id="p-home"><div class="wrap" id="home-body"></div></div>
+<div class="page" id="p-plan"><div class="wrap" id="plan-body"></div></div>
+<div class="page" id="p-check"><div class="wrap" id="check-body"></div></div>
+<div class="page" id="p-money"><div class="wrap" id="money-body"></div></div>
+<div class="page" id="p-memo"><div class="wrap" id="memo-body"></div></div>
 
-<!-- ══ 持ちもの ══ -->
-<div class="page" id="p-check">
-  <div class="hd">
-    <div><h1>持ちもの</h1><p id="check-sub"></p></div>
-    <div class="hd-right"><button class="btn sm" onclick="addCheck()">＋</button></div>
-  </div>
-  <div class="card">
-    <div class="row"><span class="muted" id="ck-count">0 / 0</span></div>
-    <div class="prog-bar"><i id="ck-prog" style="width:0%"></i></div>
-  </div>
-  <div id="ck-list"></div>
-</div>
-
-<!-- ══ お金 ══ -->
-<div class="page" id="p-money">
-  <div class="hd">
-    <div><h1>お金</h1><p id="money-sub"></p></div>
-    <div class="hd-right"><button class="btn sm" onclick="editExpense(null)">＋</button></div>
-  </div>
-
-  <div class="tot"><div class="l">合計</div><div class="v" id="m-total">¥0</div></div>
-
-  <div class="section-title">メンバー</div>
-  <div class="card">
-    <div class="pill-people" id="people-list"></div>
-    <div class="row" style="margin-top:10px">
-      <input type="text" id="new-person" placeholder="名前を追加" onkeydown="if(event.key==='Enter')addPerson()">
-      <button class="btn sm" onclick="addPerson()">追加</button>
-    </div>
-  </div>
-
-  <div class="section-title">精算</div>
-  <div id="settle-list"></div>
-
-  <div class="section-title">支払い一覧</div>
-  <div id="exp-list"></div>
-
-  <div class="section-title">請求文</div>
-  <div class="card">
-    <div class="fld">
-      <label class="lb">誰への請求か</label>
-      <select id="bill-target" onchange="renderBill()"></select>
-    </div>
-    <div class="row" style="margin-bottom:10px">
-      <label class="lb" style="margin:0;flex:1">端数を切り捨てる</label>
-      <select id="bill-round" style="width:auto" onchange="renderBill()">
-        <option value="1">しない</option>
-        <option value="100">100円</option>
-        <option value="1000" selected>1000円</option>
-      </select>
-    </div>
-    <div class="out" id="bill-out">—</div>
-    <button class="btn wide" style="margin-top:10px" onclick="copyBill()">コピー</button>
-  </div>
-</div>
-
-<!-- ══ メモ ══ -->
-<div class="page" id="p-memo">
-  <div class="hd"><div><h1>メモ</h1><p id="memo-sub">連絡先・思い出</p></div></div>
-  <div class="card">
-    <label class="lb">自由に書けます（自動保存）</label>
-    <textarea id="memo-body" style="min-height:340px" oninput="saveMemo()"></textarea>
-  </div>
-</div>
-
-<nav id="bottom-nav">
-  <button class="active" onclick="showPage('trips',this)"><span class="icon">🧳</span>旅</button>
-  <button onclick="showPage('plan',this)"><span class="icon">🕐</span>行程</button>
-  <button onclick="showPage('check',this)"><span class="icon">✓</span>持ちもの</button>
-  <button onclick="showPage('money',this)"><span class="icon">💴</span>お金</button>
-  <button onclick="showPage('memo',this)"><span class="icon">📝</span>メモ</button>
-</nav>
-
-<div class="modal" id="modal"><div class="modal-in" id="modal-in"></div></div>
+<nav><div class="navin" id="nav"></div></nav>
+<div class="sheet" id="sheet"><div class="sheet-in" id="sheet-in"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 const KEY='trip_db_v1';
 let DB={trips:[],cur:null};
+let PAGE='home', curDay=1, ckEdit=false, ckHideDone=false;
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad=n=>String(n).padStart(2,'0');
+const WD=['日','月','火','水','木','金','土'];
+
+const ICON={
+  home:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+  plan:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4v16"/><circle cx="6" cy="8" r="2"/><circle cx="6" cy="16" r="2"/><path d="M11 8h8M11 16h6"/></svg>',
+  check:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>',
+  money:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>',
+  memo:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg>',
+  tick:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7"/></svg>'
+};
+const TABS=[['home','いま'],['plan','行程'],['check','持ちもの'],['money','お金'],['memo','メモ']];
 
 function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB.trips)DB.trips=[];}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('保存できません');}}
 function trip(){return DB.trips.find(t=>t.id===DB.cur)||null;}
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1700);}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._h);toast._h=setTimeout(()=>t.classList.remove('on'),1800);}
+function openSheet(html){$('sheet-in').innerHTML=html;$('sheet').classList.add('on');}
+function closeSheet(){$('sheet').classList.remove('on');}
+$('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
 
-function showPage(p,btn){
-  if(p!=='trips'&&!trip()){toast('先に旅を選んでください');return;}
+/* ═══ 日付 ═══ */
+function dayDate(t,day){const d=new Date((t.start||'2000-01-01')+'T00:00:00');d.setDate(d.getDate()+(day-1));return d;}
+function evAt(t,e){const d=dayDate(t,e.day||1);if(e.time){const p=e.time.split(':');d.setHours(+p[0]||0,+p[1]||0,0,0);}return d;}
+function fmtMD(d){return (d.getMonth()+1)+'/'+d.getDate()+'('+WD[d.getDay()]+')';}
+function midnight(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+function todayIdx(t){const n=Math.round((midnight(new Date())-midnight(dayDate(t,1)))/86400000)+1;return n;}
+function phaseOf(t){const i=todayIdx(t);return i<1?'before':(i>t.days?'after':'during');}
+function untilText(ms){
+  const m=Math.round(ms/60000);
+  if(m<=0)return'まもなく';
+  if(m<60)return'あと'+m+'分';
+  const h=Math.floor(m/60);
+  if(h<24)return'あと'+h+'時間'+(m%60?(m%60)+'分':'');
+  return'あと'+Math.floor(h/24)+'日';
+}
+function sortedEvents(t){return t.events.slice().sort((a,b)=>evAt(t,a)-evAt(t,b));}
+function nowNext(t){
+  const now=Date.now();let cur=null,next=null;
+  for(const e of sortedEvents(t)){
+    if(evAt(t,e).getTime()<=now)cur=e;else{next=e;break;}
+  }
+  return{cur,next};
+}
+
+/* ═══ ページ切替 ═══ */
+function go(p){
+  if(p!=='home'&&!trip()){openTrips();return;}
+  PAGE=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   $('p-'+p).classList.add('active');
-  document.querySelectorAll('#bottom-nav button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  else document.querySelectorAll('#bottom-nav button')[['trips','plan','check','money','memo'].indexOf(p)].classList.add('active');
   render();window.scrollTo(0,0);
 }
-function closeModal(){$('modal').classList.remove('on');}
-function openModal(html){$('modal-in').innerHTML=html;$('modal').classList.add('on');}
-$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+function renderNav(){
+  const t=trip();
+  const left=t?t.checks.filter(c=>!c.done).length:0;
+  $('nav').innerHTML=TABS.map(([k,label])=>
+    `<button class="${PAGE===k?'on':''}" onclick="go('${k}')">${ICON[k]}${label}${
+      k==='check'&&left?`<span class="bdg">${left}</span>`:''}</button>`).join('');
+}
+function renderHeader(){
+  const t=trip();
+  if(!t){$('hd-name').textContent='旅のしおり';$('hd-sub').textContent='旅を作ってください';return;}
+  $('hd-name').textContent=t.name;
+  const i=todayIdx(t),ph=phaseOf(t);
+  $('hd-sub').textContent=ph==='during'?(i+'日目 / 全'+t.days+'日')
+    :ph==='before'?fmtMD(dayDate(t,1))+'から'+t.days+'日'
+    :'終了 / '+fmtMD(dayDate(t,1))+'〜';
+}
 
-/* ═══ 旅 ═══ */
-function newTrip(){
-  openModal(`<h3>新しい旅</h3>
-  <div class="fld"><label class="lb">タイトル</label><input type="text" id="f-name" placeholder="熊野旅行"></div>
-  <div class="fld"><label class="lb">開始日</label><input type="date" id="f-start"></div>
-  <div class="fld"><label class="lb">日数</label><input type="number" id="f-days" value="2" min="1" max="30"></div>
-  <div class="fld"><label class="lb">メンバー（カンマ区切り）</label><input type="text" id="f-people" placeholder="自分, 相方"></div>
-  <div class="row"><button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
-  <button class="btn" style="flex:1" onclick="createTrip()">作る</button></div>`);
-}
-function createTrip(){
-  const name=$('f-name').value.trim()||'新しい旅';
-  const start=$('f-start').value||new Date().toISOString().slice(0,10);
-  const days=Math.max(1,parseInt($('f-days').value)||1);
-  const ppl=$('f-people').value.split(',').map(s=>s.trim()).filter(Boolean);
-  DB.trips.unshift({id:uid(),name,start,days,people:ppl.length?ppl:['自分'],events:[],checks:[],expenses:[],memo:''});
-  DB.cur=DB.trips[0].id;save();closeModal();showPage('plan');
-}
-function openTrip(id){DB.cur=id;save();showPage('plan');}
-function delTrip(id,e){
-  e.stopPropagation();
-  const t=DB.trips.find(x=>x.id===id);if(!t)return;
-  if(!confirm('「'+t.name+'」を削除します。よろしいですか？'))return;
-  DB.trips=DB.trips.filter(x=>x.id!==id);if(DB.cur===id)DB.cur=null;save();render();
-}
-function renderTrips(){
-  const el=$('trip-list');
-  $('trips-sub').textContent=DB.trips.length?DB.trips.length+'件':'まだありません';
-  if(!DB.trips.length){el.innerHTML='<div class="empty">右上の「＋ 新しい旅」から<br>最初の旅を作ってください</div>';return;}
-  el.innerHTML=DB.trips.map(t=>{
-    const done=t.checks.filter(c=>c.done).length;
-    return `<div class="trip-item" onclick="openTrip('${t.id}')">
-      <div class="ti"><div class="tt">${esc(t.name)}</div>
-      <div class="td">${esc(t.start)}から${t.days}日 ／ ${t.people.length}人 ／ 持ちもの${done}/${t.checks.length}</div></div>
-      ${t.id===DB.cur?'<span class="badge">選択中</span>':''}
-      <button class="btn dngr sm" onclick="delTrip('${t.id}',event)">削除</button></div>`;
-  }).join('');
+/* ═══ いま ═══ */
+function renderHome(){
+  const t=trip();const el=$('home-body');
+  if(!t){
+    el.innerHTML=`<div class="sect"><div class="hero">
+      <div class="lbl" style="margin-bottom:10px">はじめに</div>
+      <div class="h-lg">旅をひとつ作ると<br>すべてが動きます</div>
+      <p class="cap" style="margin-top:12px">行程・持ちもの・立替の精算をこの中にまとめます。データは端末の中だけに保存されます。</p>
+      <button class="btn wide" style="margin-top:20px" onclick="newTrip()">最初の旅を作る</button>
+    </div></div>
+    ${DB.trips.length?'':''}
+    <div class="sect"><div class="lbl">データ</div>
+      <button class="btn ghost wide" onclick="importAll()">バックアップから読み込む</button></div>`;
+    return;
+  }
+  const now=new Date();const ph=phaseOf(t);
+  let html=`<div class="sect"><div class="now-time">
+    <div class="t">${pad(now.getHours())}:${pad(now.getMinutes())}</div>
+    <div class="d">${fmtMD(now)}</div></div>`;
+
+  if(ph==='before'){
+    const dep=sortedEvents(t)[0];
+    const depAt=dep?evAt(t,dep):dayDate(t,1);
+    const days=Math.ceil((midnight(depAt)-midnight(now))/86400000);
+    const left=t.checks.filter(c=>!c.done).length;
+    html+=`<p class="cap">出発まで <span class="next-in">${days<=0?untilText(depAt-now):'あと'+days+'日'}</span></p></div>
+    <div class="sect"><div class="hero">
+      <div class="lbl" style="margin-bottom:10px">準備</div>
+      ${t.checks.length?`<div class="h-lg">${left?'持ちものが残り'+left+'件':'持ちものは全部そろいました'}</div>
+      <div class="prog"><i style="width:${t.checks.length?(t.checks.length-left)/t.checks.length*100:0}%"></i></div>
+      ${t.checks.filter(c=>!c.done).slice(0,4).map(c=>
+        `<button class="ck" onclick="toggleCheck('${c.id}')"><span class="box">${ICON.tick}</span><span class="tx">${esc(c.text)}</span></button>`).join('')}
+      <button class="btn out wide sm" style="margin-top:14px" onclick="go('check')">持ちものを全部見る</button>`
+      :`<div class="h-lg">持ちものを書き出す</div>
+      <p class="cap" style="margin-top:10px">当日に思い出すのは無理です。今のうちに入れておくと、出発前にここで消し込めます。</p>
+      <button class="btn wide" style="margin-top:16px" onclick="go('check')">持ちものを追加する</button>`}
+    </div></div>`;
+    if(dep)html+=`<div class="sect"><div class="lbl">出発</div><div class="tile">
+      <div class="h">${esc(dep.time||'')} ${esc(dep.title)}</div>
+      <p class="cap" style="margin-top:6px">${fmtMD(depAt)}</p></div></div>`;
+  }
+
+  if(ph==='during'){
+    const nn=nowNext(t);
+    html+=`<p class="cap">${todayIdx(t)}日目</p></div>`;
+    if(nn.next){
+      const ms=evAt(t,nn.next)-now;
+      html+=`<div class="sect"><div class="hero">
+        <div class="lbl" style="margin-bottom:10px">つぎ　<span class="next-in">${untilText(ms)}</span></div>
+        ${nn.next.time?`<div class="display" style="font-size:38px;margin-bottom:6px">${esc(nn.next.time)}</div>`:''}
+        <div class="h">${esc(nn.next.title)}${nn.next.key?'<span class="tag">厳守</span>':''}</div>
+        ${nn.next.note?`<p class="cap" style="margin-top:10px;white-space:pre-wrap">${esc(nn.next.note)}</p>`:''}
+        ${nn.next.url?`<a href="${esc(nn.next.url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;font-size:15px">リンクを開く</a>`:''}
+      </div></div>`;
+    }else{
+      html+=`<div class="sect"><div class="hero"><div class="lbl" style="margin-bottom:10px">つぎ</div>
+        <div class="h-lg">今日の予定は終わりです</div></div></div>`;
+    }
+    if(nn.cur)html+=`<div class="sect"><div class="lbl">いま</div><div class="tile">
+      <div class="h">${esc(nn.cur.time||'')}　${esc(nn.cur.title)}</div></div></div>`;
+    const keys=t.events.filter(e=>e.key&&e.day===todayIdx(t)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    if(keys.length)html+=`<div class="sect"><div class="lbl">今日ここだけは守る</div>
+      ${keys.map(e=>{const past=evAt(t,e)<now;
+        return `<div class="keyline" style="${past?'opacity:.45':''}"><span class="kt">${esc(e.time||'—')}</span>
+        <span style="flex:1">${esc(e.title)}</span>${past?'<span class="cap">済</span>':''}</div>`;}).join('')}</div>`;
+    html+=`<div class="stat">
+      <button onclick="go('money')"><span class="lbl">立替の合計</span><span class="v">${yen(t.expenses.reduce((s,e)=>s+e.amount,0))}</span></button>
+      <button onclick="go('check')"><span class="lbl">持ちもの残り</span><span class="v">${t.checks.filter(c=>!c.done).length}</span></button></div>
+    <div class="sect"><button class="btn wide" onclick="editExpense(null)">立替を記録する</button></div>`;
+  }
+
+  if(ph==='after'){
+    const st=settlements();
+    html+=`<p class="cap">旅は終わりました</p></div>
+    <div class="sect"><div class="hero"><div class="lbl" style="margin-bottom:10px">精算</div>
+    ${st.length?st.map(s=>`<div class="settle"><div class="who">${esc(s.from)} → ${esc(s.to)}</div>
+      <div class="amt">${yen(s.amt)}</div></div>`).join('')
+      :'<div class="h-lg">精算はありません</div>'}
+    <button class="btn wide" style="margin-top:16px" onclick="go('money')">請求文を出す</button></div></div>
+    <div class="stat">
+      <button onclick="go('money')"><span class="lbl">総額</span><span class="v">${yen(t.expenses.reduce((s,e)=>s+e.amount,0))}</span></button>
+      <button onclick="go('plan')"><span class="lbl">行程</span><span class="v">${t.events.length}</span></button></div>`;
+  }
+  el.innerHTML=html;
 }
 
 /* ═══ 行程 ═══ */
-let curDay=1;
+function renderPlan(){
+  const t=trip();if(!t)return;
+  const ti=todayIdx(t);
+  if(!renderPlan._init){curDay=Math.min(Math.max(ti,1),t.days);renderPlan._init=1;}
+  const now=new Date();
+  const tabs=Array.from({length:t.days},(_,i)=>
+    `<button class="${curDay===i+1?'on':''}" onclick="curDay=${i+1};render()">${i+1}日目 ${fmtMD(dayDate(t,i+1))}</button>`).join('');
+  const evs=t.events.filter(e=>(e.day||1)===curDay).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  const nn=nowNext(t);
+  let rows='',lineDone=curDay!==ti;
+  evs.forEach(e=>{
+    const at=evAt(t,e),past=at<now;
+    if(!lineDone&&!past){rows+='<div class="nowline"><span>いま</span></div>';lineDone=true;}
+    rows+=`<button class="ev ${past?'past':''} ${e.key?'key':''} ${nn.cur&&nn.cur.id===e.id?'cur':''}" onclick="openEv('${e.id}')">
+      <span class="et">${esc(e.time||'—')}</span><span class="dot"></span>
+      <span class="ttl">${esc(e.title)}${e.key?'<span class="tag">厳守</span>':''}</span>
+      ${e.note?`<span class="note">${esc(e.note)}</span>`:''}
+      ${e.url?'<span class="meta">リンクあり</span>':''}
+    </button>`;
+  });
+  if(!lineDone&&evs.length)rows+='<div class="nowline"><span>いま</span></div>';
+  $('plan-body').innerHTML=`
+    <div class="sect" style="margin-top:12px"><div class="daytabs">${tabs}</div>
+    ${evs.length?`<div class="rail">${rows}</div>`:'<div class="empty">この日の予定はまだありません</div>'}
+    <button class="btn out wide" style="margin-top:20px" onclick="editEvent(null)">予定を追加</button></div>`;
+}
+function openEv(id){
+  const t=trip(),e=t.events.find(x=>x.id===id);if(!e)return;
+  const tel=(e.note||'').match(/0\d{1,4}[-‐−]?\d{1,4}[-‐−]?\d{3,4}/);
+  openSheet(`<div class="lbl">${curDay}日目 ${esc(e.time||'')}</div>
+    <h3 style="margin-top:8px">${esc(e.title)}${e.key?'<span class="tag">厳守</span>':''}</h3>
+    ${e.note?`<p style="white-space:pre-wrap;line-height:1.8;color:var(--steel)">${esc(e.note)}</p>`:''}
+    ${e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener" style="display:block;margin-top:16px;font-size:16px">リンク・地図を開く</a>`:''}
+    ${tel?`<a href="tel:${tel[0].replace(/[-‐−]/g,'')}" style="display:block;margin-top:10px;font-size:16px">${esc(tel[0])} に電話</a>`:''}
+    <div class="row" style="margin-top:24px">
+      <button class="btn ghost" onclick="closeSheet()">閉じる</button>
+      <button class="btn out" onclick="editEvent('${e.id}')">編集</button></div>`);
+}
 function editEvent(id){
   const t=trip();if(!t)return;
   const e=id?t.events.find(x=>x.id===id):null;
-  const opts=Array.from({length:t.days},(_,i)=>`<option value="${i+1}" ${e&&e.day===i+1?'selected':(!e&&curDay===i+1?'selected':'')}>${i+1}日目</option>`).join('');
-  openModal(`<h3>${e?'予定を編集':'予定を追加'}</h3>
-  <div class="fld"><label class="lb">日</label><select id="f-day">${opts}</select></div>
-  <div class="fld"><label class="lb">時刻</label><input type="time" id="f-time" value="${e?esc(e.time):''}"></div>
-  <div class="fld"><label class="lb">内容</label><input type="text" id="f-ttl" value="${e?esc(e.title):''}" placeholder="尾鷲で買い出し"></div>
-  <div class="fld"><label class="lb">メモ</label><textarea id="f-note" placeholder="場所・電話・注意点">${e?esc(e.note):''}</textarea></div>
-  <div class="fld"><label class="lb">リンク（地図・URL）</label><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://..."></div>
-  <div class="fld"><label class="lb"><input type="checkbox" id="f-key" ${e&&e.key?'checked':''} style="width:auto;margin-right:7px">ここだけは守る（強調表示）</label></div>
-  <div class="row">${e?`<button class="btn dngr" onclick="delEvent('${e.id}')">削除</button>`:''}
-  <button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
-  <button class="btn" style="flex:1" onclick="saveEvent('${e?e.id:''}')">保存</button></div>`);
+  const opts=Array.from({length:t.days},(_,i)=>
+    `<option value="${i+1}" ${(e?e.day===i+1:curDay===i+1)?'selected':''}>${i+1}日目 ${fmtMD(dayDate(t,i+1))}</option>`).join('');
+  openSheet(`<h3>${e?'予定を編集':'予定を追加'}</h3>
+  <div class="row"><div class="fld"><span class="lbl">日</span><select id="f-day">${opts}</select></div>
+  <div class="fld" style="max-width:130px"><span class="lbl">時刻</span><input type="time" id="f-time" value="${e?esc(e.time):''}"></div></div>
+  <div class="fld"><span class="lbl">内容</span><input type="text" id="f-ttl" value="${e?esc(e.title):''}" placeholder="尾鷲で買い出し"></div>
+  <div class="fld"><span class="lbl">メモ（電話番号は自動でリンクになります）</span><textarea id="f-note" placeholder="場所・電話・注意点">${e?esc(e.note):''}</textarea></div>
+  <div class="fld"><span class="lbl">リンク（地図・URL）</span><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://"></div>
+  <label class="fld" style="display:flex;gap:10px;align-items:center;cursor:pointer">
+    <input type="checkbox" id="f-key" ${e&&e.key?'checked':''} style="width:20px;height:20px;flex:0 0 auto">
+    <span>ここだけは守る（厳守として強調）</span></label>
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost" onclick="closeSheet()">やめる</button>
+    <button class="btn" onclick="saveEvent('${e?e.id:''}')">保存</button></div>
+  ${e?`<button class="btn danger wide" style="margin-top:10px" onclick="delEvent('${e.id}')">この予定を削除</button>`:''}`);
 }
 function saveEvent(id){
   const t=trip();
   const o={day:parseInt($('f-day').value)||1,time:$('f-time').value,title:$('f-ttl').value.trim()||'（無題）',
            note:$('f-note').value.trim(),url:$('f-url').value.trim(),key:$('f-key').checked};
-  if(id){Object.assign(t.events.find(x=>x.id===id),o);}
+  if(id)Object.assign(t.events.find(x=>x.id===id),o);
   else{o.id=uid();t.events.push(o);}
-  curDay=o.day;save();closeModal();render();
+  curDay=o.day;save();closeSheet();render();
 }
-function delEvent(id){const t=trip();t.events=t.events.filter(x=>x.id!==id);save();closeModal();render();}
-function renderPlan(){
-  const t=trip();if(!t)return;
-  $('plan-title').textContent=t.name;
-  $('plan-sub').textContent=t.start+'から'+t.days+'日';
-  $('daytabs').innerHTML=Array.from({length:t.days},(_,i)=>
-    `<button class="${curDay===i+1?'on':''}" onclick="curDay=${i+1};render()">${i+1}日目</button>`).join('');
-  const evs=t.events.filter(e=>e.day===curDay).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
-  $('ev-list').innerHTML=evs.length?evs.map(e=>`
-    <div class="ev ${e.key?'key':''}">
-      <div class="ev-h" onclick="editEvent('${e.id}')">
-        <div class="ev-t">${esc(e.time||'—')}</div>
-        <div class="ev-b"><div class="ev-ttl">${esc(e.title)}${e.key?'<span class="chip">厳守</span>':''}</div>
-        ${e.note?`<div class="ev-note">${esc(e.note)}</div>`:''}</div>
-      </div>
-      ${e.url?`<div class="ev-acts"><a class="link" href="${esc(e.url)}" target="_blank" rel="noopener">開く →</a></div>`:''}
-    </div>`).join('')
-    :'<div class="empty">この日の予定はまだありません<br>右上の＋から追加できます</div>';
+function delEvent(id){
+  if(!confirm('この予定を削除します。'))return;
+  const t=trip();t.events=t.events.filter(x=>x.id!==id);save();closeSheet();render();
 }
 
 /* ═══ 持ちもの ═══ */
+function renderCheck(){
+  const t=trip();if(!t)return;
+  const n=t.checks.length,d=t.checks.filter(c=>c.done).length;
+  const list=ckHideDone?t.checks.filter(c=>!c.done):t.checks;
+  $('check-body').innerHTML=`
+  <div class="sect" style="margin-top:16px">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div class="display">${n-d}</div><div class="cap">件のこり / 全${n}件</div></div>
+    <div class="prog"><i style="width:${n?d/n*100:0}%"></i></div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn ${ckHideDone?'':'ghost'} sm" onclick="ckHideDone=!ckHideDone;render()">${ckHideDone?'すべて表示':'のこりだけ'}</button>
+      <button class="btn ${ckEdit?'':'ghost'} sm" onclick="ckEdit=!ckEdit;render()">${ckEdit?'編集おわり':'削除する'}</button>
+    </div>
+  </div>
+  <div class="sect" style="margin-top:20px">
+    ${list.length?list.map(c=>`<div style="display:flex;align-items:center">
+      <button class="ck ${c.done?'done':''}" onclick="toggleCheck('${c.id}')">
+        <span class="box">${ICON.tick}</span><span class="tx">${esc(c.text)}</span></button>
+      ${ckEdit?`<button onclick="delCheck('${c.id}')" style="color:var(--mute);padding:12px;font-size:18px">×</button>`:''}
+    </div>`).join('')
+    :`<div class="empty">${n?'のこりはありません':'まだ何も入っていません'}</div>`}
+    <button class="btn out wide" style="margin-top:20px" onclick="addCheck()">持ちものを追加</button>
+  </div>`;
+}
 function addCheck(){
-  openModal(`<h3>持ちものを追加</h3>
-  <div class="fld"><label class="lb">品名（改行で複数まとめて追加）</label><textarea id="f-ck" placeholder="マリンシューズ&#10;現金3万円"></textarea></div>
-  <div class="row"><button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
-  <button class="btn" style="flex:1" onclick="saveCheck()">追加</button></div>`);
+  openSheet(`<h3>持ちものを追加</h3>
+  <div class="fld"><span class="lbl">改行でまとめて入れられます</span>
+  <textarea id="f-ck" style="min-height:150px" placeholder="マリンシューズ&#10;現金3万円&#10;モバイルバッテリー"></textarea></div>
+  <div class="row"><button class="btn ghost" onclick="closeSheet()">やめる</button>
+  <button class="btn" onclick="saveCheck()">追加</button></div>`);
+  setTimeout(()=>{const f=$('f-ck');if(f)f.focus();},60);
 }
 function saveCheck(){
   const t=trip();
   $('f-ck').value.split('\n').map(s=>s.trim()).filter(Boolean)
     .forEach(x=>t.checks.push({id:uid(),text:x,done:false}));
-  save();closeModal();render();
+  save();closeSheet();render();
 }
-function toggleCheck(id){const t=trip();const c=t.checks.find(x=>x.id===id);c.done=!c.done;save();render();}
-function delCheck(id,e){e.stopPropagation();const t=trip();t.checks=t.checks.filter(x=>x.id!==id);save();render();}
-function renderCheck(){
-  const t=trip();if(!t)return;
-  const d=t.checks.filter(c=>c.done).length,n=t.checks.length;
-  $('check-sub').textContent=t.name;
-  $('ck-count').textContent=d+' / '+n;
-  $('ck-prog').style.width=(n?d/n*100:0)+'%';
-  $('ck-list').innerHTML=n?t.checks.map(c=>`
-    <div class="ck-item ${c.done?'done':''}" onclick="toggleCheck('${c.id}')">
-      <div class="ck-box">✓</div><div class="ck-tx">${esc(c.text)}</div>
-      <button class="btn dngr sm" onclick="delCheck('${c.id}',event)">×</button>
-    </div>`).join('')
-    :'<div class="empty">＋から持ちものを追加できます<br>改行でまとめて入れられます</div>';
+function toggleCheck(id){
+  const t=trip(),c=t.checks.find(x=>x.id===id);if(!c)return;
+  c.done=!c.done;save();render();
 }
+function delCheck(id){const t=trip();t.checks=t.checks.filter(x=>x.id!==id);save();render();}
 
 /* ═══ お金 ═══ */
-function addPerson(){
-  const t=trip();const v=$('new-person').value.trim();
-  if(!v)return;
-  if(t.people.includes(v)){toast('もういます');return;}
-  t.people.push(v);$('new-person').value='';save();render();
-}
-function delPerson(nm){
-  const t=trip();
-  if(t.expenses.some(e=>e.payer===nm||e.split.includes(nm))){toast('支払いで使われています');return;}
-  t.people=t.people.filter(p=>p!==nm);save();render();
-}
-function editExpense(id){
-  const t=trip();if(!t)return;
-  const e=id?t.expenses.find(x=>x.id===id):null;
-  const payerOpts=t.people.map(p=>`<option ${e&&e.payer===p?'selected':''}>${esc(p)}</option>`).join('');
-  const splitBoxes=t.people.map(p=>{
-    const on=e?e.split.includes(p):true;
-    return `<label class="pp"><input type="checkbox" class="sp" value="${esc(p)}" ${on?'checked':''} style="width:auto;margin:0">${esc(p)}</label>`;
-  }).join('');
-  openModal(`<h3>${e?'支払いを編集':'支払いを追加'}</h3>
-  <div class="fld"><label class="lb">項目</label><input type="text" id="f-en" value="${e?esc(e.name):''}" placeholder="宿"></div>
-  <div class="fld"><label class="lb">金額</label><input type="number" id="f-ea" value="${e?e.amount:''}" placeholder="33000" inputmode="numeric"></div>
-  <div class="fld"><label class="lb">払った人</label><select id="f-ep">${payerOpts}</select></div>
-  <div class="fld"><label class="lb">誰で割るか（外すとその人は負担しません）</label>
-    <div class="pill-people" style="margin-top:5px">${splitBoxes}</div></div>
-  <div class="row">${e?`<button class="btn dngr" onclick="delExpense('${e.id}')">削除</button>`:''}
-  <button class="btn sub" style="flex:1" onclick="closeModal()">やめる</button>
-  <button class="btn" style="flex:1" onclick="saveExpense('${e?e.id:''}')">保存</button></div>`);
-}
-function saveExpense(id){
-  const t=trip();
-  const split=Array.from(document.querySelectorAll('.sp')).filter(c=>c.checked).map(c=>c.value);
-  if(!split.length){toast('割る人を選んでください');return;}
-  const o={name:$('f-en').value.trim()||'（項目なし）',amount:Math.round(parseFloat($('f-ea').value)||0),
-           payer:$('f-ep').value,split};
-  if(id){Object.assign(t.expenses.find(x=>x.id===id),o);}else{o.id=uid();t.expenses.push(o);}
-  save();closeModal();render();
-}
-function delExpense(id){const t=trip();t.expenses=t.expenses.filter(x=>x.id!==id);save();closeModal();render();}
-
 function calcBalance(){
-  const t=trip();const bal={};
+  const t=trip(),bal={};
   t.people.forEach(p=>bal[p]=0);
   t.expenses.forEach(e=>{
     if(bal[e.payer]===undefined)bal[e.payer]=0;
@@ -414,61 +488,129 @@ function calcBalance(){
   return bal;
 }
 function settlements(){
-  const bal=calcBalance();
-  const cred=[],debt=[];
-  Object.entries(bal).forEach(([p,v])=>{
-    if(v>0.5)cred.push({p,v});else if(v<-0.5)debt.push({p,v:-v});
-  });
+  const bal=calcBalance(),cred=[],debt=[];
+  Object.entries(bal).forEach(([p,v])=>{if(v>0.5)cred.push({p,v});else if(v<-0.5)debt.push({p,v:-v});});
   cred.sort((a,b)=>b.v-a.v);debt.sort((a,b)=>b.v-a.v);
   const out=[];let i=0,j=0;
   while(i<debt.length&&j<cred.length){
     const amt=Math.min(debt[i].v,cred[j].v);
     out.push({from:debt[i].p,to:cred[j].p,amt});
     debt[i].v-=amt;cred[j].v-=amt;
-    if(debt[i].v<0.5)i++;if(cred[j].v<0.5)j++;
+    if(debt[i].v<0.5)i++;
+    if(cred[j].v<0.5)j++;
   }
   return out;
 }
 function renderMoney(){
   const t=trip();if(!t)return;
-  $('money-sub').textContent=t.name;
   const total=t.expenses.reduce((s,e)=>s+e.amount,0);
-  $('m-total').textContent=yen(total);
-  $('people-list').innerHTML=t.people.map(p=>
-    `<span class="pp"><b>${esc(p)}</b><span class="x" onclick="delPerson('${esc(p)}')">×</span></span>`).join('')
-    ||'<span class="muted">メンバーがいません</span>';
   const st=settlements();
-  $('settle-list').innerHTML=st.length?st.map(s=>
-    `<div class="settle"><div class="who">${esc(s.from)} → ${esc(s.to)}</div><div class="amt">${yen(s.amt)}</div></div>`).join('')
-    :'<div class="card"><span class="muted">精算はありません</span></div>';
-  $('exp-list').innerHTML=t.expenses.length?t.expenses.map(e=>`
-    <div class="exp" onclick="editExpense('${e.id}')">
-      <div class="exp-top"><div class="exp-n">${esc(e.name)}</div><div class="exp-a">${yen(e.amount)}</div></div>
-      <div class="exp-m">${esc(e.payer)}が支払い ／ ${e.split.length}人で割る（1人 ${yen(e.amount/e.split.length)}）</div>
-    </div>`).join('')
-    :'<div class="empty">＋から支払いを追加できます</div>';
-  const sel=$('bill-target');const prev=sel.value;
-  sel.innerHTML=t.people.map(p=>`<option ${p===prev?'selected':''}>${esc(p)}</option>`).join('');
+  const billTarget=t.billTarget&&t.people.includes(t.billTarget)?t.billTarget:(t.people[1]||t.people[0]||'');
+  $('money-body').innerHTML=`
+  <div class="sect" style="margin-top:16px">
+    <div class="lbl">精算</div>
+    ${st.length?st.map(s=>`<div class="settle"><div class="who">${esc(s.from)} → ${esc(s.to)}</div>
+      <div class="amt">${yen(s.amt)}</div></div>`).join('')
+      :'<div class="empty" style="padding:24px 0">立替を入れると精算が出ます</div>'}
+    <button class="btn wide" style="margin-top:16px" onclick="editExpense(null)">立替を記録する</button>
+  </div>
+
+  <div class="sect"><div class="lbl">立替 ${t.expenses.length}件 / 総額 ${yen(total)}</div>
+    ${t.expenses.length?t.expenses.map(e=>`<button class="exp" onclick="editExpense('${e.id}')">
+      <span class="n">${esc(e.name)}<span class="s">${esc(e.payer)}が立替 ・ ${e.split.length}人で ${yen(e.amount/e.split.length)}</span></span>
+      <span class="a">${yen(e.amount)}</span></button>`).join('')
+      :'<div class="empty" style="padding:24px 0">まだありません</div>'}
+  </div>
+
+  <div class="sect"><div class="lbl">請求文</div>
+    <div class="row" style="margin-bottom:12px">
+      <select id="bill-target" onchange="setBillTarget(this.value)">${t.people.map(p=>
+        `<option ${p===billTarget?'selected':''}>${esc(p)}</option>`).join('')}</select>
+      <select id="bill-round" style="max-width:150px" onchange="renderBill()">
+        <option value="1">端数そのまま</option><option value="100">100円で切り捨て</option>
+        <option value="1000">1000円で切り捨て</option></select>
+    </div>
+    <div class="billout" id="bill-out">—</div>
+    <button class="btn out wide" style="margin-top:12px" onclick="copyBill()">コピー</button>
+  </div>
+
+  <div class="sect">
+  <details><summary>メンバー（${t.people.length}人）</summary><div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">${t.people.map((p,i)=>
+      `<span class="pp">${esc(p)}<button class="x" onclick="delPerson(${i})">×</button></span>`).join('')||'<span class="cap">いません</span>'}</div>
+    <div class="row" style="margin-top:14px">
+      <input type="text" id="new-person" placeholder="名前を追加" onkeydown="if(event.key==='Enter')addPerson()">
+      <button class="btn out sm" style="flex:0 0 auto" onclick="addPerson()">追加</button></div>
+  </div></details>
+  <details><summary>データの書き出し / 読み込み</summary><div>
+    <div class="row"><button class="btn ghost" onclick="exportAll()">書き出し</button>
+    <button class="btn ghost" onclick="importAll()">読み込み</button></div>
+    <p class="cap" style="margin-top:12px">この端末の中だけに保存されます。機種変のときは書き出してください。</p>
+  </div></details>
+  </div>`;
   renderBill();
 }
-function renderBill(){
+function setBillTarget(v){const t=trip();t.billTarget=v;save();renderBill();}
+function addPerson(){
+  const t=trip(),v=$('new-person').value.trim();
+  if(!v)return;
+  if(t.people.includes(v)){toast('もういます');return;}
+  t.people.push(v);save();render();
+}
+function delPerson(i){
+  const t=trip(),nm=t.people[i];
+  if(t.expenses.some(e=>e.payer===nm||e.split.includes(nm))){toast('立替で使われています');return;}
+  t.people.splice(i,1);save();render();
+}
+function editExpense(id){
   const t=trip();if(!t)return;
-  const target=$('bill-target').value;
-  const round=parseInt($('bill-round').value)||1;
+  if(!t.people.length){toast('先にメンバーを追加してください');go('money');return;}
+  const e=id?t.expenses.find(x=>x.id===id):null;
+  openSheet(`<h3>${e?'立替を編集':'立替を記録'}</h3>
+  <div class="fld"><span class="lbl">金額</span>
+    <input type="number" id="f-ea" inputmode="numeric" value="${e?e.amount:''}" placeholder="0"
+      style="font-size:34px;font-weight:400;letter-spacing:-.02em;padding:10px 12px;font-variant-numeric:tabular-nums"></div>
+  <div class="fld"><span class="lbl">なにに</span><input type="text" id="f-en" value="${e?esc(e.name):''}" placeholder="宿・ガソリン・食事"></div>
+  <div class="fld"><span class="lbl">払った人</span><select id="f-ep">${t.people.map(p=>
+    `<option ${e&&e.payer===p?'selected':''}>${esc(p)}</option>`).join('')}</select></div>
+  <div class="fld"><span class="lbl">誰で割るか（外すとその人は負担しません）</span>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${t.people.map(p=>{
+      const on=e?e.split.includes(p):true;
+      return `<label class="pp" style="padding-left:10px"><input type="checkbox" class="sp" value="${esc(p)}" ${on?'checked':''} style="width:18px;height:18px;margin-right:2px">${esc(p)}</label>`;}).join('')}</div></div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost" onclick="closeSheet()">やめる</button>
+    <button class="btn" onclick="saveExpense('${e?e.id:''}')">保存</button></div>
+  ${e?`<button class="btn danger wide" style="margin-top:10px" onclick="delExpense('${e.id}')">この立替を削除</button>`:''}`);
+  setTimeout(()=>{const f=$('f-ea');if(f&&!e)f.focus();},60);
+}
+function saveExpense(id){
+  const t=trip();
+  const split=Array.from(document.querySelectorAll('.sp')).filter(c=>c.checked).map(c=>c.value);
+  if(!split.length){toast('割る人を選んでください');return;}
+  const o={name:$('f-en').value.trim()||'（項目なし）',amount:Math.round(parseFloat($('f-ea').value)||0),
+           payer:$('f-ep').value,split};
+  if(id)Object.assign(t.expenses.find(x=>x.id===id),o);
+  else{o.id=uid();t.expenses.push(o);}
+  save();closeSheet();render();
+}
+function delExpense(id){
+  if(!confirm('この立替を削除します。'))return;
+  const t=trip();t.expenses=t.expenses.filter(x=>x.id!==id);save();closeSheet();render();
+}
+function renderBill(){
+  const t=trip();if(!t||!$('bill-out'))return;
+  const target=$('bill-target')?$('bill-target').value:'';
+  const round=parseInt($('bill-round')?$('bill-round').value:'1')||1;
   const lines=[];let sum=0;
   t.expenses.forEach(e=>{
     if(!e.split.includes(target))return;
     const share=e.amount/e.split.length;
     sum+=share;
-    lines.push(esc(e.name)+'　'+yen(share).replace('¥','')+'円');
+    lines.push(e.name+'　'+Math.round(share).toLocaleString('ja-JP')+'円');
   });
   if(!lines.length){$('bill-out').textContent='—';return;}
-  let txt=lines.join('\n')+'\n\n合計　'+Math.round(sum).toLocaleString('ja-JP')+'円';
-  if(round>1){
-    const r=Math.floor(sum/round)*round;
-    if(r!==Math.round(sum))txt+='\n→ '+r.toLocaleString('ja-JP')+'円';
-  }
-  $('bill-out').textContent=txt;
+  const totalOut=round>1?Math.floor(sum/round)*round:Math.round(sum);
+  $('bill-out').textContent=lines.join('\n')+'\n\n合計　'+totalOut.toLocaleString('ja-JP')+'円';
 }
 function copyBill(){
   const txt=$('bill-out').textContent;
@@ -479,8 +621,64 @@ function copyBill(){
 }
 
 /* ═══ メモ ═══ */
-function saveMemo(){const t=trip();if(!t)return;t.memo=$('memo-body').value;save();}
-function renderMemo(){const t=trip();if(!t)return;$('memo-sub').textContent=t.name;$('memo-body').value=t.memo||'';}
+function renderMemo(){
+  const t=trip();if(!t)return;
+  const ta=document.querySelector('#memo-body textarea');
+  if(ta&&document.activeElement===ta)return;
+  $('memo-body').innerHTML=`<div class="sect" style="margin-top:16px">
+    <div class="lbl">メモ</div>
+    <textarea id="memo-ta" style="min-height:60vh;border:none;background:var(--ash);border-radius:8px;padding:16px;font-size:16px"
+      placeholder="連絡先・思い出・次への申し送り" oninput="saveMemo()">${esc(t.memo||'')}</textarea></div>`;
+}
+function saveMemo(){const t=trip();if(!t)return;t.memo=$('memo-ta').value;save();}
+
+/* ═══ 旅の切替 ═══ */
+function openTrips(){
+  const rows=DB.trips.map(t=>{
+    const d=t.checks.filter(c=>c.done).length;
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <button class="list-row" onclick="openTrip('${t.id}')">
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:17px;font-weight:500;letter-spacing:-.02em">${esc(t.name)}${
+            t.id===DB.cur?'<span class="tag brass">選択中</span>':''}</span>
+          <span class="cap" style="display:block;margin-top:3px">${esc(t.start)}から${t.days}日 ・ ${t.people.length}人 ・ 持ちもの${d}/${t.checks.length}</span>
+        </span></button>
+      <button onclick="delTrip('${t.id}')" style="color:var(--mute);padding:12px;font-size:18px">×</button></div>`;
+  }).join('');
+  openSheet(`<h3>旅を選ぶ</h3>
+    ${rows||'<div class="empty">まだありません</div>'}
+    <button class="btn wide" style="margin-top:20px" onclick="newTrip()">新しい旅を作る</button>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost sm" onclick="exportAll()">書き出し</button>
+      <button class="btn ghost sm" onclick="importAll()">読み込み</button></div>`);
+}
+function newTrip(){
+  const today=new Date().toISOString().slice(0,10);
+  openSheet(`<h3>新しい旅</h3>
+  <div class="fld"><span class="lbl">タイトル</span><input type="text" id="f-name" placeholder="熊野旅行"></div>
+  <div class="row"><div class="fld"><span class="lbl">開始日</span><input type="date" id="f-start" value="${today}"></div>
+  <div class="fld" style="max-width:110px"><span class="lbl">日数</span><input type="number" id="f-days" value="2" min="1" max="30"></div></div>
+  <div class="fld"><span class="lbl">メンバー（カンマ区切り）</span><input type="text" id="f-people" placeholder="自分, 相方"></div>
+  <div class="row"><button class="btn ghost" onclick="closeSheet()">やめる</button>
+  <button class="btn" onclick="createTrip()">作る</button></div>`);
+}
+function createTrip(){
+  const name=$('f-name').value.trim()||'新しい旅';
+  const start=$('f-start').value||new Date().toISOString().slice(0,10);
+  const days=Math.max(1,parseInt($('f-days').value)||1);
+  const ppl=$('f-people').value.split(',').map(s=>s.trim()).filter(Boolean);
+  DB.trips.unshift({id:uid(),name,start,days,people:ppl.length?ppl:['自分'],events:[],checks:[],expenses:[],memo:''});
+  DB.cur=DB.trips[0].id;renderPlan._init=0;save();closeSheet();go('home');
+}
+function openTrip(id){DB.cur=id;renderPlan._init=0;save();closeSheet();go('home');}
+function delTrip(id){
+  const t=DB.trips.find(x=>x.id===id);if(!t)return;
+  if(!confirm('「'+t.name+'」を削除します。よろしいですか？'))return;
+  DB.trips=DB.trips.filter(x=>x.id!==id);
+  if(DB.cur===id)DB.cur=DB.trips.length?DB.trips[0].id:null;
+  save();closeSheet();render();
+  if(DB.trips.length)openTrips();
+}
 
 /* ═══ 書き出し / 読み込み ═══ */
 function exportAll(){
@@ -497,18 +695,16 @@ function importAll(){
     r.onload=()=>{try{const d=JSON.parse(r.result);
       if(!d.trips)throw 0;
       if(!confirm('いまのデータを置き換えます。よろしいですか？'))return;
-      DB=d;save();render();toast('読み込みました');
+      DB=d;save();closeSheet();render();toast('読み込みました');
     }catch(e){toast('読み込めませんでした');}};
     r.readAsText(f);};
   i.click();
 }
 
-
 /* ═══ リンクからの取り込み ═══ */
 function b64ToUtf8(x){
   const bin=atob(x.replace(/-/g,'+').replace(/_/g,'/'));
-  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));
 }
 async function importFromLinkZ(){
   const h=location.hash||'';
@@ -520,47 +716,54 @@ async function importFromLinkZ(){
     const ds=new DecompressionStream('deflate-raw');
     const buf=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
     json=new TextDecoder().decode(buf);
-  }catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  }catch(e){toast('リンクを読めませんでした');history.replaceState(null,'',location.pathname);return false;}
   return applyImport(JSON.parse(json));
-}
-function applyImport(data){
-  const list=Array.isArray(data)?data:(data.trips||[data]);
-  if(!list.length){ history.replaceState(null,'',location.pathname); return false; }
-  const names=list.map(t=>t.name||'名前なし').join('、');
-  if(!confirm('「'+names+'」を追加します。よろしいですか？')){
-    history.replaceState(null,'',location.pathname); return false;
-  }
-  list.forEach(t=>{
-    t.id=uid();
-    t.events=t.events||[]; t.checks=t.checks||[]; t.expenses=t.expenses||[];
-    t.people=t.people||['自分']; t.memo=t.memo||'';
-    t.events.forEach(e=>{if(!e.id)e.id=uid();});
-    t.checks.forEach(c=>{if(!c.id)c.id=uid();});
-    t.expenses.forEach(x=>{if(!x.id)x.id=uid();});
-    DB.trips.unshift(t);
-  });
-  DB.cur=DB.trips[0].id;
-  save();
-  history.replaceState(null,'',location.pathname);
-  toast('追加しました');
-  return true;
 }
 function importFromLink(){
   const h=location.hash||'';
   if(h.indexOf('#import=')!==0)return false;
   let data;
-  try{ data=JSON.parse(b64ToUtf8(decodeURIComponent(h.slice(8)))); }
-  catch(e){ toast('リンクを読めませんでした'); history.replaceState(null,'',location.pathname); return false; }
+  try{data=JSON.parse(b64ToUtf8(decodeURIComponent(h.slice(8))));}
+  catch(e){toast('リンクを読めませんでした');history.replaceState(null,'',location.pathname);return false;}
   return applyImport(data);
 }
+function applyImport(data){
+  const list=Array.isArray(data)?data:(data.trips||[data]);
+  if(!list.length){history.replaceState(null,'',location.pathname);return false;}
+  const names=list.map(t=>t.name||'名前なし').join('、');
+  if(!confirm('「'+names+'」を追加します。よろしいですか？')){
+    history.replaceState(null,'',location.pathname);return false;
+  }
+  list.forEach(t=>{
+    t.id=uid();
+    t.events=t.events||[];t.checks=t.checks||[];t.expenses=t.expenses||[];
+    t.people=t.people||['自分'];t.memo=t.memo||'';
+    t.events.forEach(e=>{if(!e.id)e.id=uid();});
+    t.checks.forEach(c=>{if(!c.id)c.id=uid();});
+    t.expenses.forEach(x=>{if(!x.id)x.id=uid();});
+    DB.trips.unshift(t);
+  });
+  DB.cur=DB.trips[0].id;renderPlan._init=0;
+  save();
+  history.replaceState(null,'',location.pathname);
+  toast('追加しました');
+  return true;
+}
 
+/* ═══ 起動 ═══ */
 function render(){
-  renderTrips();
-  if(trip()){renderPlan();renderCheck();renderMoney();renderMemo();}
+  renderHeader();renderNav();
+  if(PAGE==='home')renderHome();
+  else if(PAGE==='plan')renderPlan();
+  else if(PAGE==='check')renderCheck();
+  else if(PAGE==='money')renderMoney();
+  else if(PAGE==='memo')renderMemo();
 }
 load();
-if(!importFromLink()){ importFromLinkZ().then(ok=>{ if(ok) render(); }); }
+if(!importFromLink()){importFromLinkZ().then(ok=>{if(ok)render();});}
 render();
+setInterval(()=>{if(PAGE==='home'||PAGE==='plan')render();},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
 </body>

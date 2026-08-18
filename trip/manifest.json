@@ -1,12 +1,13 @@
 {
   "name": "旅のしおり",
   "short_name": "旅しおり",
-  "description": "旅程・持ちもの・割り勘精算",
+  "description": "行程・持ちもの・立替の精算",
   "start_url": "/yx7k2p-tools/trip/",
   "scope": "/yx7k2p-tools/trip/",
+  "id": "/yx7k2p-tools/trip/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait",
   "icons": [
     {
@@ -21,6 +22,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "id": "/yx7k2p-tools/trip/"
+  ]
 }
