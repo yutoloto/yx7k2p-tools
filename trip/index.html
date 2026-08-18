@@ -358,7 +358,12 @@ function renderHome(){
         ${nn.next.note?`<p class="cap" style="margin-top:10px;white-space:pre-wrap">${esc(nn.next.note)}</p>`:''}
         ${nn.next.alt?`<div class="alt"><div class="lbl accent" style="margin-bottom:4px">うまくいかない時</div>
           <p class="cap" style="white-space:pre-wrap;color:var(--ink)">${esc(nn.next.alt)}</p></div>`:''}
-        ${nn.next.url?`<a href="${esc(nn.next.url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;font-size:15px">リンクを開く</a>`:''}
+        ${nn.next.addr?`<p class="cap" style="margin-top:10px">${esc(nn.next.addr)}</p>`:''}
+        <div class="row" style="margin-top:16px;flex-wrap:wrap">
+          ${evTel(nn.next)?`<a class="btn out" style="text-decoration:none" href="tel:${evTel(nn.next).replace(/[-‐−]/g,'')}">${ICON.tel}電話する</a>`:''}
+          ${nn.next.addr||nn.next.url?`<a class="btn out" style="text-decoration:none" target="_blank" rel="noopener"
+            href="${nn.next.url?esc(nn.next.url):esc(mapUrl(nn.next.addr))}">地図を開く</a>`:''}
+        </div>
       </div></div>`;
     }else{
       html+=`<div class="sect"><div class="hero"><div class="lbl" style="margin-bottom:10px">つぎ</div>
@@ -422,19 +427,30 @@ function renderPlan(){
     ${evs.length?`<div class="rail">${rows}</div>`:'<div class="empty">この日の予定はまだありません</div>'}
     <button class="btn out wide" style="margin-top:20px" onclick="editEvent(null)">予定を追加</button></div>`;
 }
+const mapUrl=a=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a);
+function evTel(e){
+  if(e.tel)return e.tel;
+  const m=(e.note||'').match(/0\d{1,4}[-‐−]?\d{1,4}[-‐−]?\d{3,4}/);
+  return m?m[0]:'';
+}
 function openEv(id){
   const t=trip(),e=t.events.find(x=>x.id===id);if(!e)return;
-  const tel=(e.note||'').match(/0\d{1,4}[-‐−]?\d{1,4}[-‐−]?\d{3,4}/);
+  const tel=evTel(e);
   openSheet(`<div class="lbl">${curDay}日目 ${esc(e.time||'')}</div>
     <h3 style="margin-top:8px">${esc(e.title)}${e.key?'<span class="tag">厳守</span>':''}</h3>
     ${e.note?`<p style="white-space:pre-wrap;line-height:1.8;color:var(--steel)">${esc(e.note)}</p>`:''}
+    ${e.addr?`<div style="margin-top:16px"><div class="lbl" style="margin-bottom:4px">場所</div>
+      <div style="font-size:16px;line-height:1.6">${esc(e.addr)}</div></div>`:''}
     ${e.alt?`<div class="alt"><div class="lbl accent" style="margin-bottom:6px">うまくいかない時</div>
       <p style="white-space:pre-wrap;line-height:1.8">${esc(e.alt)}</p></div>`:''}
-    ${e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener" style="display:block;margin-top:16px;font-size:16px">リンク・地図を開く</a>`:''}
-    ${tel?`<a href="tel:${tel[0].replace(/[-‐−]/g,'')}" style="display:block;margin-top:10px;font-size:16px">${esc(tel[0])} に電話</a>`:''}
-    <div class="row" style="margin-top:24px">
+    <div class="row" style="margin-top:20px;flex-wrap:wrap">
+      ${tel?`<a class="btn out" style="text-decoration:none" href="tel:${tel.replace(/[-‐−]/g,'')}">${ICON.tel}電話する</a>`:''}
+      ${e.addr||e.url?`<a class="btn out" style="text-decoration:none" target="_blank" rel="noopener"
+        href="${e.url?esc(e.url):esc(mapUrl(e.addr))}">地図を開く</a>`:''}
+    </div>
+    <div class="row" style="margin-top:10px">
       <button class="btn ghost" onclick="closeSheet()">閉じる</button>
-      <button class="btn out" onclick="editEvent('${e.id}')">編集</button></div>`);
+      <button class="btn ghost" onclick="editEvent('${e.id}')">編集</button></div>`);
 }
 function editEvent(id){
   const t=trip();if(!t)return;
@@ -445,9 +461,13 @@ function editEvent(id){
   <div class="row"><div class="fld"><span class="lbl">日</span><select id="f-day">${opts}</select></div>
   <div class="fld" style="max-width:130px"><span class="lbl">時刻</span><input type="time" id="f-time" value="${e?esc(e.time):''}"></div></div>
   <div class="fld"><span class="lbl">内容</span><input type="text" id="f-ttl" value="${e?esc(e.title):''}" placeholder="尾鷲で買い出し"></div>
-  <div class="fld"><span class="lbl">メモ（電話番号は自動でリンクになります）</span><textarea id="f-note" placeholder="場所・電話・注意点">${e?esc(e.note):''}</textarea></div>
+  <div class="fld"><span class="lbl">メモ</span><textarea id="f-note" placeholder="座席・注意点・持っていくもの">${e?esc(e.note):''}</textarea></div>
+  <div class="row">
+    <div class="fld"><span class="lbl">場所・住所</span><input type="text" id="f-addr" value="${e?esc(e.addr||''):''}" placeholder="三重県尾鷲市九鬼町"></div>
+    <div class="fld" style="max-width:150px"><span class="lbl">電話</span><input type="text" id="f-tel" inputmode="tel" value="${e?esc(e.tel||''):''}" placeholder="0597-00-0000"></div></div>
+  <p class="cap" style="margin:-6px 0 16px">住所を入れると地図のリンクは自分で作ります。電話は「もしも」に自動で並びます。どちらも電波がなくても文字で読めます。</p>
   <div class="fld"><span class="lbl">うまくいかない時どうするか</span><textarea id="f-alt" placeholder="満席なら次の16:03。乗れなければタクシー（宿に連絡）">${e?esc(e.alt||''):''}</textarea></div>
-  <div class="fld"><span class="lbl">リンク（地図・URL）</span><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://"></div>
+  <div class="fld"><span class="lbl">リンク（あれば・任意）</span><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://"></div>
   <label class="fld" style="display:flex;gap:10px;align-items:center;cursor:pointer">
     <input type="checkbox" id="f-key" ${e&&e.key?'checked':''} style="width:20px;height:20px;flex:0 0 auto">
     <span>ここだけは守る（厳守として強調）</span></label>
@@ -460,6 +480,7 @@ function saveEvent(id){
   const t=trip();
   const o={day:parseInt($('f-day').value)||1,time:$('f-time').value,title:$('f-ttl').value.trim()||'（無題）',
            note:$('f-note').value.trim(),alt:$('f-alt').value.trim(),
+           addr:$('f-addr').value.trim(),tel:$('f-tel').value.trim(),
            url:$('f-url').value.trim(),key:$('f-key').checked};
   if(id)Object.assign(t.events.find(x=>x.id===id),o);
   else{o.id=uid();t.events.push(o);}
@@ -668,7 +689,7 @@ function foundTels(t){
     const k=n.replace(/[^0-9]/g,'');
     if(k.length>=9&&!map[k])map[k]={num:n,label};});};
   t.contacts.forEach(c=>add(c.tel,c.name));
-  t.events.forEach(e=>add(e.note,e.title));
+  t.events.forEach(e=>{add(e.tel,e.title);add(e.note,e.title);});
   /* メモは行ごとに見て、番号を除いた残りを名前にする */
   String(t.memo||'').split('\n').forEach(line=>{
     if(!TELRE.test(line))return;
@@ -715,7 +736,7 @@ function renderHelp(){
     ${EMERGENCY.map(([n,l])=>`<a class="list-row" href="tel:${encodeURIComponent(n.replace(/-/g,''))}" style="text-decoration:none;color:inherit">
       <span class="num" style="font-size:17px;font-weight:600;min-width:96px">${n}</span>
       <span class="cap">${l}</span></a>`).join('')}
-    <p class="cap" style="margin-top:14px">この画面は電波がなくても開けます。地図やリンクは開けないので、住所と電話は予定のメモに文字で書いておいてください。</p>
+    <p class="cap" style="margin-top:14px">この画面は電波がなくても開けます。予定に入れた場所と電話も、圏外のまま文字で読めます。</p>
     <button class="btn ghost wide sm" style="margin-top:14px" onclick="go('memo')">メモを開く</button>
   </div>`;
 }
