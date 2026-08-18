@@ -101,6 +101,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .keyline{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:baseline}
 .keyline:last-child{border-bottom:none}
 .keyline .kt{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--brass);min-width:44px}
+.alt{border-left:2px solid var(--accent);padding:2px 0 2px 12px;margin-top:16px}
 .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent);border:1px solid var(--accent);padding:1px 6px;border-radius:2px;vertical-align:2px;margin-left:8px}
 .tag.brass{color:var(--brass);border-color:var(--brass)}
 
@@ -187,6 +188,7 @@ a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 <div class="page" id="p-plan"><div class="wrap" id="plan-body"></div></div>
 <div class="page" id="p-check"><div class="wrap" id="check-body"></div></div>
 <div class="page" id="p-money"><div class="wrap" id="money-body"></div></div>
+<div class="page" id="p-help"><div class="wrap" id="help-body"></div></div>
 <div class="page" id="p-memo"><div class="wrap" id="memo-body"></div></div>
 
 <nav><div class="navin" id="nav"></div></nav>
@@ -212,12 +214,40 @@ const ICON={
   check:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>',
   money:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>',
   memo:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg>',
+  help:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3.5l8.5 15h-17z"/><path d="M12 9.5v4"/><circle cx="12" cy="16.2" r=".9" fill="currentColor" stroke="none"/></svg>',
+  tel:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h3l2 5-2.5 1.5a12 12 0 006 6L16 13l5 2v3a2 2 0 01-2.2 2A17 17 0 014 5.2 2 2 0 016 3z"/></svg>',
   tick:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7"/></svg>'
 };
-const TABS=[['home','いま'],['plan','行程'],['check','持ちもの'],['money','お金'],['memo','メモ']];
+const TABS=[['home','いま'],['plan','行程'],['check','持ちもの'],['money','お金'],['help','もしも']];
 
+/* 起きやすいトラブルの下敷き。新しい旅を作ると最初から入る */
+const TROUBLE=[
+ ['電車・バスを逃した','次の便の時刻をまず見る。1本後で間に合うか、タクシーに切り替えるかをその場で決める。遅れるなら宿と相手に先に連絡。'],
+ ['渋滞・道が混んで間に合わない','到着時刻を計算し直す。間に合わないなら「何を捨てるか」を先に決めておく。捨てる順番を旅の前に書いておくと迷わない。'],
+ ['雨・荒天で予定が飛んだ','屋内の代わりを1つ用意しておく。中止を決める時刻も決めておき、それまで粘らない。'],
+ ['川・海が増水／高波','入らない。上流や別の水場へ変える判断を早くする。流れが速い日はライフジャケットが無いなら見るだけにする。'],
+ ['店・施設が閉まっていた','営業時間は当てにしない。候補を2つ持っておき、遠い方から先に潰す。'],
+ ['駐車場が満車','近くのコインパーキングを事前に調べておく。イベント日は徒歩15分圏まで広げる。'],
+ ['電波が入らない','地図・切符・宿の住所は先にスクショ。別行動する前に「何時にどこ」を口で決めておく。'],
+ ['はぐれた','「◯時に◯◯へ」を先に決めておく。連絡がつかない前提で動く。'],
+ ['体調が悪い・ケガ','無理に続けない。判断に迷ったら救急相談 #7119（対応地域）。保険証は写真でスマホに入れておく。'],
+ ['財布・スマホを落とした','気づいた時点で最後に使った場所へ戻る。カードは先に停止。警察に遺失届を出す。'],
+ ['現金が足りない','コンビニATMの場所を確認。田舎はカードが使えない店が多いので現金は多めに持つ。'],
+ ['車のトラブル（ガス欠・パンク）','JAF 0570-00-8139。高速上なら #9910。三角表示板を出して、人はガードレールの外へ出る。'],
+ ['忘れ物に気づいた','買えるものかをまず判断。買えるなら買う、買えないなら予定を組み替える。取りに戻る前に往復の時間を出す。'],
+ ['イベントが順延・中止','順延先の日程と「その日に何をするか」を先に決めておく。宿のキャンセル規定も一緒に確認。']
+];
+const EMERGENCY=[['110','警察'],['119','消防・救急'],['118','海の事故（海上保安庁）'],['#7119','救急相談（対応地域）'],['#9910','道路の異常'],['0570-00-8139','JAF ロードサービス']];
+
+function normalize(t){
+  t.events=t.events||[];t.checks=t.checks||[];t.expenses=t.expenses||[];
+  t.people=t.people||['自分'];t.memo=t.memo||'';
+  t.contacts=t.contacts||[];t.plans=t.plans||[];t.rule=t.rule||'';
+  return t;
+}
 function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}
-  if(!DB.trips)DB.trips=[];}
+  if(!DB.trips)DB.trips=[];
+  DB.trips.forEach(normalize);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('保存できません');}}
 function trip(){return DB.trips.find(t=>t.id===DB.cur)||null;}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._h);toast._h=setTimeout(()=>t.classList.remove('on'),1800);}
@@ -326,6 +356,8 @@ function renderHome(){
         ${nn.next.time?`<div class="display" style="font-size:38px;margin-bottom:6px">${esc(nn.next.time)}</div>`:''}
         <div class="h">${esc(nn.next.title)}${nn.next.key?'<span class="tag">厳守</span>':''}</div>
         ${nn.next.note?`<p class="cap" style="margin-top:10px;white-space:pre-wrap">${esc(nn.next.note)}</p>`:''}
+        ${nn.next.alt?`<div class="alt"><div class="lbl accent" style="margin-bottom:4px">うまくいかない時</div>
+          <p class="cap" style="white-space:pre-wrap;color:var(--ink)">${esc(nn.next.alt)}</p></div>`:''}
         ${nn.next.url?`<a href="${esc(nn.next.url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;font-size:15px">リンクを開く</a>`:''}
       </div></div>`;
     }else{
@@ -339,6 +371,9 @@ function renderHome(){
       ${keys.map(e=>{const past=evAt(t,e)<now;
         return `<div class="keyline" style="${past?'opacity:.45':''}"><span class="kt">${esc(e.time||'—')}</span>
         <span style="flex:1">${esc(e.title)}</span>${past?'<span class="cap">済</span>':''}</div>`;}).join('')}</div>`;
+    if(t.rule)html+=`<div class="sect"><div class="alt" style="margin-top:0">
+      <div class="lbl accent" style="margin-bottom:4px">ここだけ守れば間に合う</div>
+      <div style="font-size:16px;font-weight:500;line-height:1.5">${esc(t.rule)}</div></div></div>`;
     html+=`<div class="stat">
       <button onclick="go('money')"><span class="lbl">立替の合計</span><span class="v">${yen(t.expenses.reduce((s,e)=>s+e.amount,0))}</span></button>
       <button onclick="go('check')"><span class="lbl">持ちもの残り</span><span class="v">${t.checks.filter(c=>!c.done).length}</span></button></div>
@@ -393,6 +428,8 @@ function openEv(id){
   openSheet(`<div class="lbl">${curDay}日目 ${esc(e.time||'')}</div>
     <h3 style="margin-top:8px">${esc(e.title)}${e.key?'<span class="tag">厳守</span>':''}</h3>
     ${e.note?`<p style="white-space:pre-wrap;line-height:1.8;color:var(--steel)">${esc(e.note)}</p>`:''}
+    ${e.alt?`<div class="alt"><div class="lbl accent" style="margin-bottom:6px">うまくいかない時</div>
+      <p style="white-space:pre-wrap;line-height:1.8">${esc(e.alt)}</p></div>`:''}
     ${e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener" style="display:block;margin-top:16px;font-size:16px">リンク・地図を開く</a>`:''}
     ${tel?`<a href="tel:${tel[0].replace(/[-‐−]/g,'')}" style="display:block;margin-top:10px;font-size:16px">${esc(tel[0])} に電話</a>`:''}
     <div class="row" style="margin-top:24px">
@@ -409,6 +446,7 @@ function editEvent(id){
   <div class="fld" style="max-width:130px"><span class="lbl">時刻</span><input type="time" id="f-time" value="${e?esc(e.time):''}"></div></div>
   <div class="fld"><span class="lbl">内容</span><input type="text" id="f-ttl" value="${e?esc(e.title):''}" placeholder="尾鷲で買い出し"></div>
   <div class="fld"><span class="lbl">メモ（電話番号は自動でリンクになります）</span><textarea id="f-note" placeholder="場所・電話・注意点">${e?esc(e.note):''}</textarea></div>
+  <div class="fld"><span class="lbl">うまくいかない時どうするか</span><textarea id="f-alt" placeholder="満席なら次の16:03。乗れなければタクシー（宿に連絡）">${e?esc(e.alt||''):''}</textarea></div>
   <div class="fld"><span class="lbl">リンク（地図・URL）</span><input type="text" id="f-url" value="${e?esc(e.url||''):''}" placeholder="https://"></div>
   <label class="fld" style="display:flex;gap:10px;align-items:center;cursor:pointer">
     <input type="checkbox" id="f-key" ${e&&e.key?'checked':''} style="width:20px;height:20px;flex:0 0 auto">
@@ -421,7 +459,8 @@ function editEvent(id){
 function saveEvent(id){
   const t=trip();
   const o={day:parseInt($('f-day').value)||1,time:$('f-time').value,title:$('f-ttl').value.trim()||'（無題）',
-           note:$('f-note').value.trim(),url:$('f-url').value.trim(),key:$('f-key').checked};
+           note:$('f-note').value.trim(),alt:$('f-alt').value.trim(),
+           url:$('f-url').value.trim(),key:$('f-key').checked};
   if(id)Object.assign(t.events.find(x=>x.id===id),o);
   else{o.id=uid();t.events.push(o);}
   curDay=o.day;save();closeSheet();render();
@@ -621,6 +660,113 @@ function copyBill(){
     ta.select();document.execCommand('copy');ta.remove();toast('コピーしました');});
 }
 
+/* ═══ もしも ═══ */
+const TELRE=/0\d{1,4}[-‐−]?\d{1,4}[-‐−]?\d{3,4}/g;
+function foundTels(t){
+  const map={};
+  const add=(s,label)=>{(String(s||'').match(TELRE)||[]).forEach(n=>{
+    const k=n.replace(/[^0-9]/g,'');
+    if(k.length>=9&&!map[k])map[k]={num:n,label};});};
+  t.contacts.forEach(c=>add(c.tel,c.name));
+  t.events.forEach(e=>add(e.note,e.title));
+  /* メモは行ごとに見て、番号を除いた残りを名前にする */
+  String(t.memo||'').split('\n').forEach(line=>{
+    if(!TELRE.test(line))return;
+    TELRE.lastIndex=0;
+    const label=line.replace(TELRE,'').replace(/[（(）)：:・\-\s]+$/,'').trim().slice(0,24);
+    add(line,label||'メモ');
+  });
+  return Object.values(map);
+}
+function renderHelp(){
+  const t=trip();if(!t)return;
+  const tels=foundTels(t);
+  $('help-body').innerHTML=`
+  <div class="sect" style="margin-top:16px">
+    <div class="lbl">ここだけ守れば間に合う</div>
+    <button class="hero" style="width:100%;text-align:left;margin-top:10px" onclick="editRule()">
+      ${t.rule?`<div class="h">${esc(t.rule)}</div>`
+      :'<div class="h" style="color:var(--mute)">まだ決めていません<br><span class="cap">崩れた時に何を守るかを1つだけ書く</span></div>'}
+    </button>
+  </div>
+
+  <div class="sect"><div class="lbl">電話する</div>
+    ${tels.length?tels.map(x=>`<a class="list-row" href="tel:${x.num.replace(/[-‐−]/g,'')}" style="text-decoration:none;color:inherit">
+      <span style="color:var(--accent)">${ICON.tel}</span>
+      <span style="flex:1;min-width:0"><span style="display:block;font-size:16px;font-weight:500">${esc(x.label)}</span>
+      <span class="cap num" style="display:block">${esc(x.num)}</span></span></a>`).join('')
+      :'<div class="empty" style="padding:20px 0">予定のメモに電話番号を書くと、ここに出ます</div>'}
+    <button class="btn out wide sm" style="margin-top:12px" onclick="editContact(null)">連絡先を足す</button>
+  </div>
+
+  <div class="sect"><div class="lbl">こうなったら</div>
+    ${t.plans.length?t.plans.map(p=>`<details><summary>${esc(p.w)}</summary>
+      <div><p style="line-height:1.8;color:var(--steel);white-space:pre-wrap">${esc(p.t)}</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost sm" onclick="editPlan('${p.id}')">書きかえる</button>
+        <button class="btn ghost sm" onclick="delPlan('${p.id}')">消す</button></div></div></details>`).join('')
+      :'<div class="empty" style="padding:20px 0">まだありません</div>'}
+    <div class="row" style="margin-top:16px">
+      <button class="btn out sm" onclick="editPlan(null)">自分で足す</button>
+      <button class="btn ghost sm" onclick="fillTrouble()">よくあるトラブルを入れる</button></div>
+  </div>
+
+  <div class="sect"><div class="lbl">緊急の番号</div>
+    ${EMERGENCY.map(([n,l])=>`<a class="list-row" href="tel:${encodeURIComponent(n.replace(/-/g,''))}" style="text-decoration:none;color:inherit">
+      <span class="num" style="font-size:17px;font-weight:600;min-width:96px">${n}</span>
+      <span class="cap">${l}</span></a>`).join('')}
+    <p class="cap" style="margin-top:14px">この画面は電波がなくても開けます。地図やリンクは開けないので、住所と電話は予定のメモに文字で書いておいてください。</p>
+    <button class="btn ghost wide sm" style="margin-top:14px" onclick="go('memo')">メモを開く</button>
+  </div>`;
+}
+function editRule(){
+  const t=trip();
+  openSheet(`<h3>ここだけ守れば間に合う</h3>
+  <p class="cap" style="margin-bottom:14px">全部が崩れても、これさえ守れば旅は成立する、という1点を書きます。</p>
+  <div class="fld"><textarea id="f-rule" placeholder="16:00に川を出る">${esc(t.rule)}</textarea></div>
+  <div class="row"><button class="btn ghost" onclick="closeSheet()">やめる</button>
+  <button class="btn" onclick="saveRule()">保存</button></div>`);
+}
+function saveRule(){const t=trip();t.rule=$('f-rule').value.trim();save();closeSheet();render();}
+function editContact(id){
+  const t=trip();const c=id?t.contacts.find(x=>x.id===id):null;
+  openSheet(`<h3>${c?'連絡先を編集':'連絡先を足す'}</h3>
+  <div class="fld"><span class="lbl">名前</span><input type="text" id="f-cn" value="${c?esc(c.name):''}" placeholder="宿・レンタカー・タクシー"></div>
+  <div class="fld"><span class="lbl">電話番号</span><input type="text" id="f-ct" inputmode="tel" value="${c?esc(c.tel):''}" placeholder="0597-00-0000"></div>
+  <div class="row"><button class="btn ghost" onclick="closeSheet()">やめる</button>
+  <button class="btn" onclick="saveContact('${c?c.id:''}')">保存</button></div>
+  ${c?`<button class="btn danger wide" style="margin-top:10px" onclick="delContact('${c.id}')">消す</button>`:''}`);
+}
+function saveContact(id){
+  const t=trip();
+  const o={name:$('f-cn').value.trim()||'連絡先',tel:$('f-ct').value.trim()};
+  if(id)Object.assign(t.contacts.find(x=>x.id===id),o);else{o.id=uid();t.contacts.push(o);}
+  save();closeSheet();render();
+}
+function delContact(id){const t=trip();t.contacts=t.contacts.filter(x=>x.id!==id);save();closeSheet();render();}
+function editPlan(id){
+  const t=trip();const p=id?t.plans.find(x=>x.id===id):null;
+  openSheet(`<h3>${p?'書きかえる':'こうなったら'}</h3>
+  <div class="fld"><span class="lbl">こうなったら</span><input type="text" id="f-pw" value="${p?esc(p.w):''}" placeholder="花火が順延になったら"></div>
+  <div class="fld"><span class="lbl">こうする</span><textarea id="f-pt" placeholder="翌日の同時刻へ。宿は素泊まりに変更して連絡">${p?esc(p.t):''}</textarea></div>
+  <div class="row"><button class="btn ghost" onclick="closeSheet()">やめる</button>
+  <button class="btn" onclick="savePlan('${p?p.id:''}')">保存</button></div>`);
+}
+function savePlan(id){
+  const t=trip();
+  const o={w:$('f-pw').value.trim()||'（状況）',t:$('f-pt').value.trim()};
+  if(id)Object.assign(t.plans.find(x=>x.id===id),o);else{o.id=uid();t.plans.push(o);}
+  save();closeSheet();render();
+}
+function delPlan(id){const t=trip();t.plans=t.plans.filter(x=>x.id!==id);save();render();}
+function fillTrouble(){
+  const t=trip();let n=0;
+  TROUBLE.forEach(([w,tx])=>{
+    if(t.plans.some(p=>p.w===w))return;
+    t.plans.push({id:uid(),w,t:tx});n++;});
+  save();render();toast(n?n+'件入れました':'すべて入っています');
+}
+
 /* ═══ メモ ═══ */
 function renderMemo(){
   const t=trip();if(!t)return;
@@ -668,7 +814,8 @@ function createTrip(){
   const start=$('f-start').value||new Date().toISOString().slice(0,10);
   const days=Math.max(1,parseInt($('f-days').value)||1);
   const ppl=$('f-people').value.split(',').map(s=>s.trim()).filter(Boolean);
-  DB.trips.unshift({id:uid(),name,start,days,people:ppl.length?ppl:['自分'],events:[],checks:[],expenses:[],memo:''});
+  DB.trips.unshift(normalize({id:uid(),name,start,days,people:ppl.length?ppl:['自分'],
+    plans:TROUBLE.map(([w,t])=>({id:uid(),w,t}))}));
   DB.cur=DB.trips[0].id;renderPlan._init=0;save();closeSheet();go('home');
 }
 function openTrip(id){DB.cur=id;renderPlan._init=0;save();closeSheet();go('home');}
@@ -736,10 +883,10 @@ function applyImport(data){
     history.replaceState(null,'',location.pathname);return false;
   }
   list.forEach(t=>{
-    t.id=uid();
-    t.events=t.events||[];t.checks=t.checks||[];t.expenses=t.expenses||[];
-    t.people=t.people||['自分'];t.memo=t.memo||'';
+    t.id=uid();normalize(t);
     t.events.forEach(e=>{if(!e.id)e.id=uid();});
+    t.plans.forEach(p=>{if(!p.id)p.id=uid();});
+    t.contacts.forEach(c=>{if(!c.id)c.id=uid();});
     t.checks.forEach(c=>{if(!c.id)c.id=uid();});
     t.expenses.forEach(x=>{if(!x.id)x.id=uid();});
     DB.trips.unshift(t);
@@ -758,6 +905,7 @@ function render(){
   else if(PAGE==='plan')renderPlan();
   else if(PAGE==='check')renderCheck();
   else if(PAGE==='money')renderMoney();
+  else if(PAGE==='help')renderHelp();
   else if(PAGE==='memo')renderMemo();
 }
 load();

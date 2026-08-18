@@ -4,7 +4,7 @@
   "description": "行程・持ちもの・立替の精算",
   "start_url": "/yx7k2p-tools/trip/",
   "scope": "/yx7k2p-tools/trip/",
-  "id": "/yx7k2p-tools/trip/",
+  "id": "/yx7k2p-tools/trip/?app=shiori",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
